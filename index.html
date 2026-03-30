@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Incisiv | Project Deadline Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- SheetJS loaded on demand when user clicks Download Excel -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -281,7 +281,15 @@ async function doLogin() {
   if (!email || !pass) { showLoginError('Please enter your email and password.'); return; }
   btn.disabled = true; btn.textContent = 'Signing in…';
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { showLoginError(error.message); btn.disabled = false; btn.textContent = 'Sign In'; }
+  if (error) {
+    const friendly = /invalid.login|invalid.credentials|email.not.confirmed|wrong.password/i.test(error.message)
+      ? 'Incorrect email or password. Please try again.'
+      : /rate.limit/i.test(error.message)
+      ? 'Too many attempts. Please wait a moment and try again.'
+      : error.message;
+    showLoginError(friendly);
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
 }
 function showLoginError(msg) {
   const e = document.getElementById('login-error');
@@ -618,8 +626,16 @@ function updateSidebar() {
 }
 
 // ── EXCEL EXPORT ──────────────────────────────────────────────────────────────
-function exportExcel() {
-  if(!window.XLSX){ toast('Excel library not loaded yet. Try again.','error'); return; }
+async function exportExcel() {
+  if(!window.XLSX) {
+    toast('Loading Excel library…','info');
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
   const wb=XLSX.utils.book_new();
   // Sheet 1: Summary
   const sumRows=[['Project','Client','Type','Start Date','Final Delivery','Progress %','Pending','Overdue']];
