@@ -259,6 +259,9 @@ const SUPABASE_URL  = 'https://sreyiojexannfsxrblxu.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyZXlpb2pleGFubmZzeHJibHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4Nzc3ODAsImV4cCI6MjA5MDQ1Mzc4MH0.u0yYk9wR0-_ITZtKhdkkKUf7rjjcPQoSzWnzFstTIpk';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// Pre-warm Supabase immediately so it's awake before you hit Sign In
+fetch(SUPABASE_URL + '/auth/v1/settings', { headers: { apikey: SUPABASE_ANON } }).catch(() => {});
+
 const ADMIN_EMAIL = 'raunak.taneja@incisiv.com';
 
 let currentUser    = null;
@@ -312,23 +315,35 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
   currentUser = session.user;
   isAdmin     = currentUser.email === ADMIN_EMAIL;
-  await loadAppData();
+
+  // Show the app immediately with seed data — don't make user wait
+  allProjects     = SEED_PROJECTS;
+  visibleProjects = isAdmin ? SEED_PROJECTS : [];
   mountApp();
+
+  // Load real data in the background, then silently refresh
+  await loadAppData();
+  render();
 });
 
 // ── DATA LOADING ──────────────────────────────────────────────────────────────
 async function loadAppData() {
-  // Fetch live project data from GitHub Pages
-  try {
-    const res = await fetch('./data.json?t=' + Date.now());
-    allProjects = res.ok ? ((await res.json()).projects || []) : SEED_PROJECTS;
-  } catch(e) { allProjects = SEED_PROJECTS; }
-
+  // Fetch project data + access permissions in parallel
   if (isAdmin) {
+    const [projRes] = await Promise.all([
+      fetch('./data.json?t=' + Date.now()).catch(() => null),
+      loadAdminData()
+    ]);
+    try { if (projRes && projRes.ok) allProjects = (await projRes.json()).projects || SEED_PROJECTS; }
+    catch(e) { allProjects = SEED_PROJECTS; }
     visibleProjects = allProjects;
-    await loadAdminData();
   } else {
-    const { data: access } = await sb.from('project_access').select('project_id').eq('user_id', currentUser.id);
+    const [projRes, { data: access }] = await Promise.all([
+      fetch('./data.json?t=' + Date.now()).catch(() => null),
+      sb.from('project_access').select('project_id').eq('user_id', currentUser.id)
+    ]);
+    try { if (projRes && projRes.ok) allProjects = (await projRes.json()).projects || SEED_PROJECTS; }
+    catch(e) { allProjects = SEED_PROJECTS; }
     const allowed = new Set((access || []).map(r => r.project_id));
     visibleProjects = allProjects.filter(p => allowed.has(p.id));
   }
