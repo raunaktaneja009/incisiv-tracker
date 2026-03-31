@@ -172,16 +172,40 @@
       "startDate": "2026-03-06",
       "finalDeliveryDate": "2026-04-30",
       "folderPath": "/Users/raunaksinghtaneja/Desktop/Project Tracker/CXO Study-2026",
-      "notes": "Global CXO Research Program in partnership with Manhattan and World Retail Congress (WRC). Session title: 'Inside the CEO Agenda: The Trends Redefining Retail's Next Five Years'. Presented at WRC, Intercontinental Hotel Berlin, Apr 27–29, 2026. Content session slot: Tuesday Apr 29, 11:30–11:50.",
+      "notes": "Global CXO Research Program in partnership with Manhattan and World Retail Congress (WRC). Session title: 'Inside the CEO Agenda: The Trends Redefining Retail's Next Five Years'. Presented at WRC, Intercontinental Hotel Berlin, Apr 27\u201329, 2026. Content session slot: Tuesday Apr 29, 11:30\u201311:50.",
       "status": "active",
       "createdAt": "2026-03-31T00:00:00.000Z",
       "stakeholders": [
-        { "name": "Raunak Taneja", "email": "raunak.taneja@incisiv.com", "role": "Project Manager (Incisiv)" },
-        { "name": "Gaurav Pant", "email": "gaurav@incisiv.com", "role": "Lead (Incisiv)" },
-        { "name": "Dave Weinand", "email": "dave@incisiv.com", "role": "Incisiv Team" },
-        { "name": "Imogen Jones", "email": "Imogen.Jones@worldretailcongress.com", "role": "Director, Commercial Partnerships (WRC)" },
-        { "name": "Niamh Stone", "email": "Niamh.Stone@worldretailcongress.com", "role": "Programme Director (WRC)" },
-        { "name": "Ian McGarrigle", "email": "Ian.McGarrigle@worldretailcongress.com", "role": "Chairman (WRC)" }
+        {
+          "name": "Raunak Taneja",
+          "email": "raunak.taneja@incisiv.com",
+          "role": "Project Manager (Incisiv)"
+        },
+        {
+          "name": "Gaurav Pant",
+          "email": "gaurav@incisiv.com",
+          "role": "Lead (Incisiv)"
+        },
+        {
+          "name": "Dave Weinand",
+          "email": "dave@incisiv.com",
+          "role": "Incisiv Team"
+        },
+        {
+          "name": "Imogen Jones",
+          "email": "Imogen.Jones@worldretailcongress.com",
+          "role": "Director, Commercial Partnerships (WRC)"
+        },
+        {
+          "name": "Niamh Stone",
+          "email": "Niamh.Stone@worldretailcongress.com",
+          "role": "Programme Director (WRC)"
+        },
+        {
+          "name": "Ian McGarrigle",
+          "email": "Ian.McGarrigle@worldretailcongress.com",
+          "role": "Chairman (WRC)"
+        }
       ],
       "deliverables": [
         {
@@ -257,7 +281,7 @@
           "dueDate": "2026-04-27",
           "dateType": "confirmed",
           "sourceFile": "2026 Global Executive Research-Kickoff.pdf",
-          "notes": "WRC Congress, Intercontinental Hotel Berlin, Apr 27–29. Landing pages, social assets & registration forms needed by Apr 22. Content session: Tue Apr 29, 11:30–11:50.",
+          "notes": "WRC Congress, Intercontinental Hotel Berlin, Apr 27\u201329. Landing pages, social assets & registration forms needed by Apr 22. Content session: Tue Apr 29, 11:30\u201311:50.",
           "completed": false
         },
         {
@@ -292,14 +316,13 @@
         {
           "timestamp": "2026-03-31T00:00:03.000Z",
           "date": "2026-03-31",
-          "message": "Deliverables 1–4 marked complete (Kick Off through Field Survey — all past dates as of Mar 31).",
+          "message": "Deliverables 1\u20134 marked complete (Kick Off through Field Survey \u2014 all past dates as of Mar 31).",
           "type": "success"
         }
       ]
     }
   ],
   "settings": {
-
     "slackHandle": "@raunak",
     "bossSlackHandle": "@gaurav",
     "bossName": "Gaurav Pant",
@@ -387,7 +410,17 @@
       "files": [
         "incisiv_projects_data.json"
       ]
+    },
+    {
+      "timestamp": "2026-03-31T12:44:05.75952Z",
+      "action": "daily_scan",
+      "message": "Scan complete. 3 new/modified file(s): incisiv_projects_data.json, index.html, Incisiv Tracker - Product Vision.docx",
+      "files": [
+        "incisiv_projects_data.json",
+        "index.html",
+        "Incisiv Tracker - Product Vision.docx"
+      ]
     }
   ],
-  "lastUpdated": "2026-03-31T00:00:00.000Z"
+  "lastUpdated": "2026-03-31T12:44:05.75952Z"
 }
