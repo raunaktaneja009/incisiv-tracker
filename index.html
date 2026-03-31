@@ -119,7 +119,8 @@
     .gantt-diamond { width: 14px; height: 14px; border-radius: 2px; transform: rotate(45deg); display: block; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
     .gantt-milestone-label { position: absolute; top: 50%; left: 18px; transform: translateY(-50%); font-size: 11px; font-weight: 600; white-space: nowrap; color: var(--text); background: rgba(255,255,255,.9); padding: 1px 4px; border-radius: 3px; pointer-events: none; }
     .gantt-milestone-days { font-size: 10px; font-weight: 700; color: inherit; margin-left: 4px; }
-    .gantt-project-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 12px 0 6px; }
+    .gantt-project-label { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #fff; padding: 7px 14px; border-radius: 7px; margin: 18px 0 10px; }
+    .gantt-project-label .gantt-project-count { font-size: 10px; font-weight: 600; opacity: .8; margin-left: auto; text-transform: none; letter-spacing: 0; }
     .log-body { max-height: 300px; overflow-y: auto; }
     .log-entry { padding: 10px 18px; border-bottom: 1px solid #f1f5f9; font-size: 12.5px; display: flex; align-items: flex-start; gap: 10px; }
     .log-entry:last-child { border-bottom: none; }
@@ -476,9 +477,18 @@ function renderGantt(projects) {
   const todayPct=Math.max(0,Math.min(100,((new Date()-minD)/totalMs)*100));
   let ticks=''; for(let i=0;i<=5;i++){const d=new Date(minD.getTime()+(totalMs/5)*i);ticks+=`<div class="gantt-date-tick" style="left:${i/5*100}%;">${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`;}
   let h=`<div class="gantt-wrap"><div class="gantt-header"><span class="gantt-header-title">Timeline Overview</span><div class="gantt-legend"><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#22c55e;"></div>7+ days</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#eab308;"></div>3–6 days</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#ef4444;"></div>1–2 days</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#3b82f6;"></div>Complete</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#6b7280;"></div>Overdue</div></div></div><div class="gantt-body"><div class="gantt-date-header" style="margin-bottom:16px;">${ticks}</div>`;
-  projects.forEach(p=>{
+  const PROJECT_COLORS = ['#4f46e5','#ea580c','#0891b2','#16a34a','#7c3aed','#db2777'];
+  projects.forEach((p,pi)=>{
     const delivs=(p.deliverables||[]).filter(d=>d.dueDate); if(!delivs.length) return;
-    h+=`<div class="gantt-project-label">${esc(p.name)}</div>`;
+    const col = PROJECT_COLORS[pi % PROJECT_COLORS.length];
+    const done = (p.deliverables||[]).filter(d=>d.completed).length;
+    const total = (p.deliverables||[]).length;
+    h+=`<div class="gantt-project-label" style="background:${col};">
+      <span style="background:rgba(255,255,255,.2);border-radius:4px;padding:1px 7px;font-size:11px;">${pi+1}</span>
+      ${esc(p.name)}
+      ${p.client?`<span style="opacity:.75;font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;">· ${esc(p.client)}</span>`:''}
+      <span class="gantt-project-count">${done}/${total} complete</span>
+    </div>`;
     delivs.forEach(d=>{
       const s=calcStatus(d.dueDate,d.completed), pos=pct(d.dueDate), lr=pos>75;
       h+=`<div class="gantt-row"><div class="gantt-row-label">${d.completed?'<span style="color:var(--green);font-size:12px;flex-shrink:0;">✓</span>':''}<span title="${esc(d.name)}" style="${d.completed?'text-decoration:line-through;color:var(--muted);':''}">${esc(d.name)}</span></div><div class="gantt-track"><div class="gantt-today-line" style="left:${todayPct}%;"><div class="gantt-today-label">Today</div></div><div class="gantt-milestone" style="left:${pos}%;"><div class="gantt-diamond" style="background:${s.color};"></div><div class="gantt-milestone-label" style="${lr?'left:auto;right:18px;':'left:18px;'}">${fmtDate(d.dueDate)} <span class="gantt-milestone-days" style="color:${s.color};">${s.label}</span></div></div></div></div>`;
