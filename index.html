@@ -293,9 +293,8 @@ function showLoginError(msg) {
   const e = document.getElementById('login-error');
   e.textContent = msg; e.style.display = 'block';
 }
-async function doLogout() {
-  await sb.auth.signOut();
-  // Explicitly reset UI in case the auth listener fires late
+function doLogout() {
+  // Reset UI instantly — don't wait for Supabase round-trip
   currentUser = null; isAdmin = false; visibleProjects = []; allUsers = [];
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-sidebar').style.display  = 'none';
@@ -305,6 +304,8 @@ async function doLogout() {
   document.getElementById('login-error').style.display = 'none';
   const btn = document.getElementById('login-btn');
   btn.disabled = false; btn.textContent = 'Sign In';
+  // Clear session in background — fire and forget
+  sb.auth.signOut().catch(() => {});
 }
 
 sb.auth.onAuthStateChange(async (event, session) => {
