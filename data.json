@@ -57,7 +57,9 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Project kick-off deck shared with Coupa.",
           "completed": true,
-          "completedAt": "2026-02-04T00:00:00.000Z"
+          "completedAt": "2026-02-04T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d2",
@@ -67,7 +69,9 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Initial survey draft shared with Coupa for feedback.",
           "completed": true,
-          "completedAt": "2026-02-06T00:00:00.000Z"
+          "completedAt": "2026-02-06T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d3",
@@ -77,7 +81,9 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Finalize Survey — Incisiv + Coupa.",
           "completed": true,
-          "completedAt": "2026-02-18T00:00:00.000Z"
+          "completedAt": "2026-02-18T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d4",
@@ -87,7 +93,9 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Survey goes live in the field.",
           "completed": true,
-          "completedAt": "2026-02-20T00:00:00.000Z"
+          "completedAt": "2026-02-20T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d5",
@@ -97,7 +105,9 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Survey closes and fieldwork analysis wraps up.",
           "completed": true,
-          "completedAt": "2026-03-20T00:00:00.000Z"
+          "completedAt": "2026-03-20T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d6",
@@ -107,7 +117,9 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Shared with Coupa team on Jan 9-10 per email thread. Marked complete.",
           "completed": true,
-          "completedAt": "2026-03-25T00:00:00.000Z"
+          "completedAt": "2026-03-25T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d7",
@@ -116,7 +128,9 @@
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Incisiv delivers draft playbook to Coupa for review.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d8",
@@ -125,7 +139,9 @@
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Coupa to provide feedback on playbook draft.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "d9",
@@ -134,7 +150,9 @@
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "State of the Industry Flagship Report — turnkey design and production.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         }
       ],
       "logs": [
@@ -216,7 +234,9 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Project kick-off with Incisiv, Manhattan and WRC teams.",
           "completed": true,
-          "completedAt": "2026-03-06T00:00:00.000Z"
+          "completedAt": "2026-03-06T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d2",
@@ -226,7 +246,9 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Survey feedback and PR alignment confirmed.",
           "completed": true,
-          "completedAt": "2026-03-13T00:00:00.000Z"
+          "completedAt": "2026-03-13T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d3",
@@ -236,7 +258,9 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Incisiv and WRC synced before finalising.",
           "completed": true,
-          "completedAt": "2026-03-15T00:00:00.000Z"
+          "completedAt": "2026-03-15T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d4",
@@ -246,7 +270,9 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Survey goes live in the field.",
           "completed": true,
-          "completedAt": "2026-03-18T00:00:00.000Z"
+          "completedAt": "2026-03-18T00:00:00.000Z",
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d5",
@@ -255,7 +281,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Fireside chat format; Manhattan pushing to schedule. Basic structure due before final slides. Ref: Imogen email – Apr 7.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d6",
@@ -264,7 +292,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "WRC = controller, Incisiv = processor. WRC passes download registrations to Incisiv to qualify for Manhattan. Ref: Imogen email – Apr 10.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d7",
@@ -273,7 +303,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Confirm standard fields + qualifying question for Manhattan. WRC fields: Name, Job title, Company, Country, Email, Phone (optional), Are you a retailer? Ref: Imogen email – Apr 10.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d8",
@@ -282,7 +314,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Required for onsite signage and WRC promotions. WRC deadline – Apr 13.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d9",
@@ -291,7 +325,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Align on key messaging once first findings available. Manhattan already pushing to schedule.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d10",
@@ -300,7 +336,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Survey fieldwork closes.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d11",
@@ -309,7 +347,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Data preview ASAP; focus on key insights for the WRC session.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d12",
@@ -318,7 +358,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Incisiv to create and share with WRC. WRC deadline – Apr 22.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d13",
@@ -327,7 +369,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Ready for full report launch at Congress. WRC deadline – Apr 22.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d14",
@@ -336,7 +380,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Final slides for Congress session. Align with key findings from data readout.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d15",
@@ -345,7 +391,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Full report uploaded to WRC platform. WRC to host; download leads passed to Incisiv for Manhattan qualification. WRC upload deadline – Apr 24.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d16",
@@ -354,7 +402,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Full eBook available at Congress. Session presents headline findings. Congress: Apr 27–29.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d17",
@@ -363,7 +413,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Supporting posts tagging WRC and Manhattan. Schedule to be built. Congress: Apr 27–29.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         },
         {
           "id": "cxo-d18",
@@ -372,7 +424,9 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Post-event promotion by Incisiv, Manhattan and WRC. Confirm delivery date.",
-          "completed": false
+          "completed": false,
+          "owner": "",
+          "internalNotes": ""
         }
       ],
       "logs": [
