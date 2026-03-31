@@ -618,7 +618,7 @@ function renderAdminPanel() {
         <div class="project-checkboxes">`;
       allProjects.forEach(p=>{
         const granted=ua.includes(p.id);
-        h+=`<div class="project-toggle ${granted?'granted':''}" onclick="toggleAccess('${u.id}','${p.id}',${!granted},this)">${granted?'✓ ':''}${esc(p.name)}</div>`;
+        h+=`<div class="project-toggle ${granted?'granted':''}" onclick="toggleAccess('${u.id}','${p.id}',${!granted},this)">${granted?'✓ ':''}${esc(p.name)}${p.client?` <span style="font-weight:400;opacity:.6;font-size:11px;">· ${esc(p.client)}</span>`:''}</div>`;
       });
       h+=`</div></div>`;
     });
