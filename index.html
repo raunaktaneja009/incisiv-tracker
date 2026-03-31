@@ -45,6 +45,11 @@
     .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .page-title { font-size: 16px; font-weight: 700; }
     .topbar-right { display: flex; gap: 10px; align-items: center; }
+    .view-toggle { display: flex; align-items: center; gap: 2px; background: #f1f5f9; border-radius: 8px; padding: 3px; border: 1px solid #e2e8f0; }
+    .view-toggle-btn { padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: #64748b; transition: all .15s; white-space: nowrap; }
+    .view-toggle-btn.active { background: #fff; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+    .view-toggle-btn.client-active { background: #0891b2; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    .client-mode-banner { background: #e0f2fe; border-bottom: 2px solid #7dd3fc; padding: 9px 28px; font-size: 12.5px; font-weight: 600; color: #0369a1; display: flex; align-items: center; gap: 8px; }
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
     .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: #4338ca; }
     .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); } .btn-secondary:hover { background: var(--bg); }
@@ -242,7 +247,16 @@
 <main class="main" id="app-main" style="display:none;">
   <div class="topbar">
     <div><span class="page-title" id="page-title">Dashboard</span></div>
-    <div class="topbar-right"></div>
+    <div class="topbar-right" id="topbar-right">
+      <div class="view-toggle" id="view-toggle-wrap" style="display:none;">
+        <button class="view-toggle-btn active" id="btn-internal" data-mode="internal" onclick="setViewMode('internal')">🏢 Internal</button>
+        <button class="view-toggle-btn" id="btn-client" data-mode="client" onclick="setViewMode('client')">👁 Client Preview</button>
+      </div>
+    </div>
+  </div>
+  <div class="client-mode-banner" id="client-mode-banner" style="display:none;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    Client Preview — You're viewing as your client sees it. Stakeholder details and source files are hidden.
   </div>
   <div class="content" id="main-content"></div>
 </main>
@@ -262,6 +276,8 @@ const ADMIN_EMAIL = 'raunak.taneja@incisiv.com';
 
 let currentUser    = null;
 let isAdmin        = false;
+let isIncisiv      = false;   // any @incisiv.com user
+let clientView     = false;   // true = external/client view, false = internal view
 let allProjects    = [];   // from data.json
 let visibleProjects= [];   // filtered for this user
 let userAccessMap  = {};   // { userId: [projectId, …] } (admin only)
@@ -296,7 +312,7 @@ function showLoginError(msg) {
 }
 function doLogout() {
   // Reset UI instantly — don't wait for Supabase round-trip
-  currentUser = null; isAdmin = false; visibleProjects = []; allUsers = [];
+  currentUser = null; isAdmin = false; isIncisiv = false; clientView = false; visibleProjects = []; allUsers = [];
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-sidebar').style.display  = 'none';
   document.getElementById('app-main').style.display     = 'none';
@@ -311,7 +327,7 @@ function doLogout() {
 
 sb.auth.onAuthStateChange(async (event, session) => {
   if (!session) {
-    currentUser = null; isAdmin = false; visibleProjects = []; allUsers = [];
+    currentUser = null; isAdmin = false; isIncisiv = false; clientView = false; visibleProjects = []; allUsers = [];
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-sidebar').style.display  = 'none';
     document.getElementById('app-main').style.display     = 'none';
@@ -378,6 +394,13 @@ function mountApp() {
   document.getElementById('user-avatar').textContent        = initials;
   document.getElementById('user-name-display').textContent  = currentUser.email;
   document.getElementById('user-role-display').textContent  = isAdmin ? '● Admin · Sign out' : 'Sign out';
+  // View mode setup
+  isIncisiv  = currentUser.email.endsWith('@incisiv.com');
+  clientView = !isIncisiv; // Incisiv staff default internal; external users always see client view
+  document.getElementById('view-toggle-wrap').style.display = isIncisiv ? 'flex' : 'none';
+  document.getElementById('btn-internal').classList.toggle('active', true);
+  document.getElementById('btn-client').classList.remove('active','client-active');
+  document.getElementById('client-mode-banner').style.display = clientView ? 'flex' : 'none';
   render();
 }
 
@@ -525,9 +548,9 @@ function renderAllDeliverables() {
     <th onclick="sortD('projectName')">Project${arrow('projectName')}</th>
     <th onclick="sortD('dueDate')">Due Date${arrow('dueDate')}</th>
     <th onclick="sortD('days')">Status${arrow('days')}</th>
-    <th>Source</th>
+    ${!clientView?`<th>Source</th>`:''}
   </tr></thead><tbody>`;
-  if(!filtered.length) h+=`<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted);">No deliverables found.</td></tr>`;
+  if(!filtered.length) h+=`<tr><td colspan="${clientView?4:5}" style="text-align:center;padding:32px;color:var(--muted);">No deliverables found.</td></tr>`;
   else filtered.forEach(d=>{
     const s=calcStatus(d.dueDate,d.completed);
     h+=`<tr style="${d.completed?'opacity:.55;':''}">
@@ -535,7 +558,7 @@ function renderAllDeliverables() {
       <td><span class="tag" onclick="navigate('project','${d.projectId}')">${esc(d.projectName)}</span></td>
       <td>${d.dueDate?fmtDate(d.dueDate):'—'}</td>
       <td><span class="status-badge ${s.cls}"><span class="dot" style="background:${s.dot};"></span>${s.label}</span></td>
-      <td><span class="source-file">${esc(d.sourceFile||'—')}</span></td>
+      ${!clientView?`<td><span class="source-file">${esc(d.sourceFile||'—')}</span></td>`:''}
     </tr>`;
   });
   h+=`</tbody></table></div>`;
@@ -561,19 +584,19 @@ function renderProjectDetail(p) {
       <div style="font-size:12.5px;color:var(--muted);"><strong style="color:var(--text);display:block;">${prog}%</strong>Progress</div>
     </div>
     ${p.notes?`<div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:10px;">${esc(p.notes)}</div>`:''}
-    ${p.stakeholders&&p.stakeholders.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;">${p.stakeholders.map(s=>`<span class="pill pill-accent" title="${esc(s.email)}">${esc(s.name)}${s.role?' ('+esc(s.role)+')':''}</span>`).join('')}</div>`:''}
+    ${!clientView&&p.stakeholders&&p.stakeholders.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;">${p.stakeholders.map(s=>`<span class="pill pill-accent" title="${esc(s.email)}">${esc(s.name)}${s.role?' ('+esc(s.role)+')':''}</span>`).join('')}</div>`:''}
   </div>
   <div class="table-wrap">
     <div class="table-header"><span class="table-title">Deliverables (${delivs.length})</span></div>
-    <table><thead><tr><th>Deliverable</th><th>Due Date</th><th>Status</th><th>Source</th><th>Notes</th></tr></thead><tbody>`;
-  if(!delivs.length) h+=`<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted);">No deliverables.</td></tr>`;
+    <table><thead><tr><th>Deliverable</th><th>Due Date</th><th>Status</th>${!clientView?'<th>Source</th>':''}<th>Notes</th></tr></thead><tbody>`;
+  if(!delivs.length) h+=`<tr><td colspan="${clientView?4:5}" style="text-align:center;padding:32px;color:var(--muted);">No deliverables.</td></tr>`;
   else [...delivs].sort((a,b)=>{if(a.completed&&!b.completed)return 1;if(!a.completed&&b.completed)return-1;return(a.dueDate||'9999')<(b.dueDate||'9999')?-1:1;}).forEach(d=>{
     const s=calcStatus(d.dueDate,d.completed);
     h+=`<tr style="${d.completed?'opacity:.55;':''}">
       <td><strong>${esc(d.name)}</strong>${d.dateType==='estimated'?'<span class="badge-estimated">~est</span>':''}</td>
       <td>${d.dueDate?fmtDate(d.dueDate):'—'}</td>
       <td><span class="status-badge ${s.cls}"><span class="dot" style="background:${s.dot};"></span>${s.label}</span></td>
-      <td><span class="source-file">${esc(d.sourceFile||'—')}</span></td>
+      ${!clientView?`<td><span class="source-file">${esc(d.sourceFile||'—')}</span></td>`:''}
       <td style="font-size:12px;color:var(--muted);">${esc(d.notes||'—')}</td>
     </tr>`;
   });
@@ -648,11 +671,30 @@ async function toggleAccess(userId, projectId, grant, el) {
   el.style.opacity='1'; el.style.pointerEvents='';
 }
 
+// ── VIEW MODE ─────────────────────────────────────────────────────────────────
+function setViewMode(mode) {
+  clientView = (mode === 'client');
+  const bi = document.getElementById('btn-internal');
+  const bc = document.getElementById('btn-client');
+  if (bi && bc) {
+    bi.classList.toggle('active', mode === 'internal');
+    bi.classList.remove('client-active');
+    bc.classList.remove('active');
+    bc.classList.toggle('client-active', mode === 'client');
+  }
+  const banner = document.getElementById('client-mode-banner');
+  if (banner) banner.style.display = clientView ? 'flex' : 'none';
+  // If switching to client view while on log page, go back to dashboard
+  if (clientView && view === 'log') navigate('dashboard');
+  render();
+}
+
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
 function updateSidebar() {
   const allD=visibleProjects.flatMap(p=>p.deliverables||[]);
   document.getElementById('sb-week').textContent    = allD.filter(d=>{if(d.completed)return false;const s=calcStatus(d.dueDate);return s.days!==null&&s.days>=0&&s.days<=7;}).length;
   document.getElementById('sb-overdue').textContent = allD.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='overdue').length;
+  document.getElementById('nav-log').style.display  = clientView ? 'none' : 'flex';
   document.getElementById('sidebar-projects').innerHTML=visibleProjects.filter(p=>p.status==='active').map(p=>`<div class="nav-item ${view==='project'&&pid===p.id?'active':''}" onclick="navigate('project','${p.id}')"><div style="width:7px;height:7px;border-radius:50%;background:${projectDot(p)};flex-shrink:0;"></div><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.name)}</span></div>`).join('');
 }
 
