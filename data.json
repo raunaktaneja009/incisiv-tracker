@@ -8,7 +8,7 @@
       "startDate": "2026-02-04",
       "finalDeliveryDate": "2026-04-13",
       "folderPath": "/Users/raunaksinghtaneja/Desktop/Project Tracker/Direct Spends-2026",
-      "notes": "State of the Industry Study in partnership with Coupa. 125 respondents — Director level+ from $750M+ revenue orgs. Industries: Discrete Manufacturing, Process Manufacturing, Transportation & Logistics. Regions: North America and Europe (UK, Germany, France).",
+      "notes": "State of the Industry Study in partnership with Coupa. 125 respondents \u2014 Director level+ from $750M+ revenue orgs. Industries: Discrete Manufacturing, Process Manufacturing, Transportation & Logistics. Regions: North America and Europe (UK, Germany, France).",
       "status": "active",
       "createdAt": "2026-03-25T00:00:00.000Z",
       "stakeholders": [
@@ -45,7 +45,7 @@
         {
           "name": "Alyssa Magee",
           "email": "alyssa.magee@coupa.com",
-          "role": "Coupa — Data Request Contact"
+          "role": "Coupa \u2014 Data Request Contact"
         }
       ],
       "deliverables": [
@@ -57,9 +57,7 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Project kick-off deck shared with Coupa.",
           "completed": true,
-          "completedAt": "2026-02-04T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-02-04T00:00:00.000Z"
         },
         {
           "id": "d2",
@@ -69,9 +67,7 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Initial survey draft shared with Coupa for feedback.",
           "completed": true,
-          "completedAt": "2026-02-06T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-02-06T00:00:00.000Z"
         },
         {
           "id": "d3",
@@ -79,11 +75,9 @@
           "dueDate": "2026-02-18",
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
-          "notes": "Finalize Survey — Incisiv + Coupa.",
+          "notes": "Finalize Survey \u2014 Incisiv + Coupa.",
           "completed": true,
-          "completedAt": "2026-02-18T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-02-18T00:00:00.000Z"
         },
         {
           "id": "d4",
@@ -93,33 +87,27 @@
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Survey goes live in the field.",
           "completed": true,
-          "completedAt": "2026-02-20T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-02-20T00:00:00.000Z"
         },
         {
           "id": "d5",
-          "name": "Survey Fieldwork & Analysis — Close Survey",
+          "name": "Survey Fieldwork & Analysis \u2014 Close Survey",
           "dueDate": "2026-03-20",
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Survey closes and fieldwork analysis wraps up.",
           "completed": true,
-          "completedAt": "2026-03-20T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-03-20T00:00:00.000Z"
         },
         {
           "id": "d6",
-          "name": "Data Readout — Aggregate + 3 Industry Readouts",
+          "name": "Data Readout \u2014 Aggregate + 3 Industry Readouts",
           "dueDate": "2026-03-25",
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Shared with Coupa team on Jan 9-10 per email thread. Marked complete.",
           "completed": true,
-          "completedAt": "2026-03-25T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-03-25T00:00:00.000Z"
         },
         {
           "id": "d7",
@@ -128,9 +116,7 @@
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Incisiv delivers draft playbook to Coupa for review.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "completed": false
         },
         {
           "id": "d8",
@@ -139,9 +125,7 @@
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
           "notes": "Coupa to provide feedback on playbook draft.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "completed": false
         },
         {
           "id": "d9",
@@ -149,10 +133,8 @@
           "dueDate": "2026-04-13",
           "dateType": "confirmed",
           "sourceFile": "2026 Direct Spend Study-Kickoff.pdf",
-          "notes": "State of the Industry Flagship Report — turnkey design and production.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "State of the Industry Flagship Report \u2014 turnkey design and production.",
+          "completed": false
         }
       ],
       "logs": [
@@ -177,7 +159,7 @@
         {
           "timestamp": "2026-03-25T09:05:00.000Z",
           "date": "2026-03-25",
-          "message": "Data Readout marked complete — confirmed shared with client per email thread.",
+          "message": "Data Readout marked complete \u2014 confirmed shared with client per email thread.",
           "type": "success"
         }
       ]
@@ -190,7 +172,7 @@
       "startDate": "2026-03-06",
       "finalDeliveryDate": "2026-04-30",
       "folderPath": "/Users/raunaksinghtaneja/Desktop/Project Tracker/CXO Study-2026",
-      "notes": "Global CXO Research Program in partnership with Manhattan and World Retail Congress (WRC). Session title: 'Inside the CEO Agenda: The Trends Redefining Retail's Next Five Years'. Presented at WRC, Intercontinental Hotel Berlin, Apr 27–29, 2026. Content session slot: Tuesday Apr 29, 11:30–11:50.",
+      "notes": "Global CXO Research Program in partnership with Manhattan and World Retail Congress (WRC). Session title: 'Inside the CEO Agenda: The Trends Redefining Retail's Next Five Years'. Presented at WRC, Intercontinental Hotel Berlin, Apr 27\u201329, 2026. Content session slot: Tuesday Apr 29, 11:30\u201311:50.",
       "status": "active",
       "createdAt": "2026-03-31T00:00:00.000Z",
       "stakeholders": [
@@ -234,9 +216,7 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Project kick-off with Incisiv, Manhattan and WRC teams.",
           "completed": true,
-          "completedAt": "2026-03-06T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-03-06T00:00:00.000Z"
         },
         {
           "id": "cxo-d2",
@@ -246,9 +226,7 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Survey feedback and PR alignment confirmed.",
           "completed": true,
-          "completedAt": "2026-03-13T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-03-13T00:00:00.000Z"
         },
         {
           "id": "cxo-d3",
@@ -258,9 +236,7 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Incisiv and WRC synced before finalising.",
           "completed": true,
-          "completedAt": "2026-03-15T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-03-15T00:00:00.000Z"
         },
         {
           "id": "cxo-d4",
@@ -270,20 +246,16 @@
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Survey goes live in the field.",
           "completed": true,
-          "completedAt": "2026-03-18T00:00:00.000Z",
-          "owner": "",
-          "internalNotes": ""
+          "completedAt": "2026-03-18T00:00:00.000Z"
         },
         {
           "id": "cxo-d5",
-          "name": "Content Session – Structure & Format",
+          "name": "Content Session \u2013 Structure & Format",
           "dueDate": "2026-04-07",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Fireside chat format; Manhattan pushing to schedule. Basic structure due before final slides. Ref: Imogen email – Apr 7.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Fireside chat format; Manhattan pushing to schedule. Basic structure due before final slides. Ref: Imogen email \u2013 Apr 7.",
+          "completed": false
         },
         {
           "id": "cxo-d6",
@@ -291,10 +263,8 @@
           "dueDate": "2026-04-10",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "WRC = controller, Incisiv = processor. WRC passes download registrations to Incisiv to qualify for Manhattan. Ref: Imogen email – Apr 10.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "WRC = controller, Incisiv = processor. WRC passes download registrations to Incisiv to qualify for Manhattan. Ref: Imogen email \u2013 Apr 10.",
+          "completed": false
         },
         {
           "id": "cxo-d7",
@@ -302,10 +272,8 @@
           "dueDate": "2026-04-10",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Confirm standard fields + qualifying question for Manhattan. WRC fields: Name, Job title, Company, Country, Email, Phone (optional), Are you a retailer? Ref: Imogen email – Apr 10.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Confirm standard fields + qualifying question for Manhattan. WRC fields: Name, Job title, Company, Country, Email, Phone (optional), Are you a retailer? Ref: Imogen email \u2013 Apr 10.",
+          "completed": false
         },
         {
           "id": "cxo-d8",
@@ -313,10 +281,8 @@
           "dueDate": "2026-04-13",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Required for onsite signage and WRC promotions. WRC deadline – Apr 13.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Required for onsite signage and WRC promotions. WRC deadline \u2013 Apr 13.",
+          "completed": false
         },
         {
           "id": "cxo-d9",
@@ -325,9 +291,7 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Align on key messaging once first findings available. Manhattan already pushing to schedule.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "completed": false
         },
         {
           "id": "cxo-d10",
@@ -336,9 +300,7 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Survey fieldwork closes.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "completed": false
         },
         {
           "id": "cxo-d11",
@@ -347,9 +309,7 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Data preview ASAP; focus on key insights for the WRC session.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "completed": false
         },
         {
           "id": "cxo-d12",
@@ -357,10 +317,8 @@
           "dueDate": "2026-04-22",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Incisiv to create and share with WRC. WRC deadline – Apr 22.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Incisiv to create and share with WRC. WRC deadline \u2013 Apr 22.",
+          "completed": false
         },
         {
           "id": "cxo-d13",
@@ -368,21 +326,17 @@
           "dueDate": "2026-04-22",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Ready for full report launch at Congress. WRC deadline – Apr 22.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Ready for full report launch at Congress. WRC deadline \u2013 Apr 22.",
+          "completed": false
         },
         {
           "id": "cxo-d14",
-          "name": "Content Session – Final Slides",
+          "name": "Content Session \u2013 Final Slides",
           "dueDate": "2026-04-22",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Final slides for Congress session. Align with key findings from data readout.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "completed": false
         },
         {
           "id": "cxo-d15",
@@ -390,10 +344,8 @@
           "dueDate": "2026-04-24",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Full report uploaded to WRC platform. WRC to host; download leads passed to Incisiv for Manhattan qualification. WRC upload deadline – Apr 24.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Full report uploaded to WRC platform. WRC to host; download leads passed to Incisiv for Manhattan qualification. WRC upload deadline \u2013 Apr 24.",
+          "completed": false
         },
         {
           "id": "cxo-d16",
@@ -401,10 +353,8 @@
           "dueDate": "2026-04-27",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Full eBook available at Congress. Session presents headline findings. Congress: Apr 27–29.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Full eBook available at Congress. Session presents headline findings. Congress: Apr 27\u201329.",
+          "completed": false
         },
         {
           "id": "cxo-d17",
@@ -412,10 +362,8 @@
           "dueDate": "2026-04-27",
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
-          "notes": "Supporting posts tagging WRC and Manhattan. Schedule to be built. Congress: Apr 27–29.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "notes": "Supporting posts tagging WRC and Manhattan. Schedule to be built. Congress: Apr 27\u201329.",
+          "completed": false
         },
         {
           "id": "cxo-d18",
@@ -424,9 +372,7 @@
           "dateType": "confirmed",
           "sourceFile": "CXO_ProjectTracker_v3_2.xlsx",
           "notes": "Post-event promotion by Incisiv, Manhattan and WRC. Confirm delivery date.",
-          "completed": false,
-          "owner": "",
-          "internalNotes": ""
+          "completed": false
         }
       ],
       "logs": [
@@ -451,13 +397,13 @@
         {
           "timestamp": "2026-03-31T00:00:03.000Z",
           "date": "2026-03-31",
-          "message": "Deliverables 1–4 marked complete (Kick Off through Field Survey — all past dates as of Mar 31).",
+          "message": "Deliverables 1\u20134 marked complete (Kick Off through Field Survey \u2014 all past dates as of Mar 31).",
           "type": "success"
         },
         {
           "timestamp": "2026-03-31T13:00:00.000Z",
           "date": "2026-03-31",
-          "message": "Deliverables updated to Scenario A (On-Time) — 18 milestones imported from CXO_ProjectTracker_v3_2.xlsx.",
+          "message": "Deliverables updated to Scenario A (On-Time) \u2014 18 milestones imported from CXO_ProjectTracker_v3_2.xlsx.",
           "type": "success"
         }
       ]
@@ -561,7 +507,19 @@
         "index.html",
         "Incisiv Tracker - Product Vision.docx"
       ]
+    },
+    {
+      "timestamp": "2026-04-01T13:03:13.816Z",
+      "action": "daily_scan",
+      "message": "Scan complete. 5 new/modified file(s): incisiv_projects_data.json, incisiv_folder_scan.py, project_info_TEMPLATE.json, data.json, index.html",
+      "files": [
+        "incisiv_projects_data.json",
+        "incisiv_folder_scan.py",
+        "project_info_TEMPLATE.json",
+        "data.json",
+        "index.html"
+      ]
     }
   ],
-  "lastUpdated": "2026-03-31T13:00:00.000Z"
+  "lastUpdated": "2026-04-01T13:03:13.816Z"
 }
