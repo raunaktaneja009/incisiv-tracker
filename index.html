@@ -403,7 +403,7 @@ document.getElementById('auth-password').addEventListener('keydown', e => {
 //  MOUNT
 // ═══════════════════════════════════════════════════
 async function mountApp() {
-  isIncisiv = currentUser.email.endsWith('@incisiv.com');
+  isIncisiv = currentUser.email.toLowerCase().endsWith('@incisiv.com');
 
   // User pill
   const initials = currentUser.email.slice(0,2).toUpperCase();
@@ -412,8 +412,14 @@ async function mountApp() {
 
   // Show/hide toggle
   document.getElementById('view-toggle-wrap').style.display = isIncisiv ? 'flex' : 'none';
-  // Non-incisiv users always see client view
-  if (!isIncisiv) { clientView = true; }
+
+  // Non-incisiv users always see client view — apply layout immediately
+  if (!isIncisiv) {
+    clientView = true;
+    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('client-header').style.display = 'block';
+    document.querySelector('.main').style.marginLeft = '0';
+  }
 
   // Show/hide activity log nav (internal only)
   document.getElementById('nav-activity').style.display = isIncisiv ? 'flex' : 'none';
@@ -450,8 +456,12 @@ async function loadSupabaseState() {
     const { data, error } = await sb.from('tracker_updates').select('*');
     if (error) {
       if (error.code === '42P01') {
-        showToast('⚠️ tracker_updates table not set up yet — completions & comments disabled', 'warn');
+        // Table doesn't exist yet
+        showToast('⚠️ Run the tracker_updates SQL in Supabase to enable comments & completions', 'warn');
+        return; // leave supabaseReady = false
       }
+      // Any other error — Supabase is reachable, table exists, mark ready anyway
+      supabaseReady = true;
       return;
     }
     supabaseReady = true;
@@ -471,7 +481,7 @@ async function loadSupabaseState() {
       trackerComments[k].sort((a,b) => new Date(a.ts) - new Date(b.ts));
     }
   } catch(e) {
-    // silently fail
+    // Network error — silently fail, supabaseReady stays false
   }
 }
 
