@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Incisiv | Project Deadline Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SheetJS loaded on demand when user clicks Download Excel -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -19,8 +20,6 @@
       --shadow: 0 1px 3px rgba(0,0,0,.08); --shadow-md: 0 4px 6px rgba(0,0,0,.07); --radius: 10px;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
-
-    /* ── SIDEBAR ── */
     .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); color: #cbd5e1; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid #1f2937; }
     .sidebar-logo .brand { font-size: 18px; font-weight: 700; color: #fff; }
@@ -42,1019 +41,708 @@
     .user-info { overflow: hidden; flex: 1; }
     .user-name { font-size: 12px; font-weight: 600; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .user-role { font-size: 10px; color: #6b7280; }
-
-    /* ── MAIN ── */
     .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
     .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .page-title { font-size: 16px; font-weight: 700; }
     .topbar-right { display: flex; gap: 10px; align-items: center; }
-    .synced-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
-
-    /* ── VIEW TOGGLE ── */
     .view-toggle { display: flex; align-items: center; gap: 2px; background: #f1f5f9; border-radius: 8px; padding: 3px; border: 1px solid #e2e8f0; }
     .view-toggle-btn { padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: #64748b; transition: all .15s; white-space: nowrap; }
     .view-toggle-btn.active { background: #fff; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+    .view-toggle-btn.client-active { background: #0891b2; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    .client-mode-banner { background: #e0f2fe; border-bottom: 2px solid #7dd3fc; padding: 9px 28px; font-size: 12.5px; font-weight: 600; color: #0369a1; display: flex; align-items: center; gap: 8px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+    .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: #4338ca; }
+    .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); } .btn-secondary:hover { background: var(--bg); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); } .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-sm { padding: 5px 12px; font-size: 12px; } .btn-xs { padding: 3px 9px; font-size: 11px; border-radius: 5px; }
+    .btn-excel { background: #16a34a; color: #fff; } .btn-excel:hover { background: #15803d; }
+    .content { padding: 24px 28px; flex: 1; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--white); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .stat-card .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-card .stat-val { font-size: 28px; font-weight: 800; margin: 6px 0 4px; }
+    .stat-card .stat-hint { font-size: 12px; color: var(--muted); }
+    .stat-card.s-blue .stat-val { color: var(--blue); } .stat-card.s-yellow .stat-val { color: var(--yellow); }
+    .stat-card.s-red .stat-val { color: var(--red); } .stat-card.s-green .stat-val { color: var(--green); }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { font-size: 15px; font-weight: 700; }
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap: 16px; margin-bottom: 28px; }
+    .project-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; transition: box-shadow .2s; cursor: pointer; }
+    .project-card:hover { box-shadow: var(--shadow-md); }
+    .project-card-header { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
+    .project-name { font-size: 14px; font-weight: 700; } .project-type { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .project-status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .project-card-body { padding: 14px 18px; }
+    .project-meta { display: flex; gap: 16px; margin-bottom: 12px; }
+    .meta-item { font-size: 12px; color: var(--muted); }
+    .meta-item strong { color: var(--text); display: block; font-size: 13px; }
+    .deliverable-summary { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+    .pill-green { background: var(--green-bg); color: var(--green); } .pill-yellow { background: var(--yellow-bg); color: var(--yellow); }
+    .pill-red { background: var(--red-bg); color: var(--red); } .pill-grey { background: var(--grey-bg); color: var(--grey); }
+    .pill-blue { background: var(--blue-bg); color: var(--blue); } .pill-accent { background: var(--accent-light); color: var(--accent); }
+    .project-card-footer { padding: 10px 18px; background: #fafafa; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .progress-bar-wrap { flex: 1; margin-right: 16px; }
+    .progress-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .progress-bar { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 99px; background: var(--accent); }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .table-wrap { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; }
+    .table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .table-title { font-size: 14px; font-weight: 700; }
+    .search-box { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 7px 12px; min-width: 200px; }
+    .search-box input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text); width: 100%; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; white-space: nowrap; }
+    th:hover { background: #f1f5f9; color: var(--text); }
+    td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; } tr:hover td { background: #fafbfc; }
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+    .badge-green { background: var(--green-bg); color: var(--green); } .badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+    .badge-red { background: var(--red-bg); color: var(--red); } .badge-grey { background: var(--grey-bg); color: var(--grey); }
+    .badge-blue { background: var(--blue-bg); color: var(--blue); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .badge-estimated { font-size: 10px; background: var(--yellow-bg); color: var(--yellow); border-radius: 4px; padding: 1px 5px; font-weight: 600; margin-left: 4px; }
+    .source-file { font-size: 11px; color: var(--muted); }
+    .tag { display: inline-block; background: var(--accent-light); color: var(--accent); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .gantt-wrap { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; }
+    .gantt-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .gantt-header-title { font-size: 14px; font-weight: 700; }
+    .gantt-legend { display: flex; gap: 14px; }
+    .gantt-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+    .gantt-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .gantt-body { padding: 16px 20px 20px; overflow-x: auto; }
+    .gantt-date-header { display: flex; margin-bottom: 8px; margin-left: 220px; position: relative; height: 20px; }
+    .gantt-date-tick { position: absolute; font-size: 10px; color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+    .gantt-row { display: flex; align-items: center; margin-bottom: 6px; min-height: 32px; }
+    .gantt-row-label { width: 220px; flex-shrink: 0; padding-right: 16px; display: flex; align-items: center; gap: 6px; }
+    .gantt-row-label span { font-size: 12.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+    .gantt-track { flex: 1; height: 32px; background: #f8fafc; border-radius: 6px; position: relative; min-width: 400px; border: 1px solid #f1f5f9; }
+    .gantt-today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); z-index: 3; border-radius: 1px; }
+    .gantt-today-label { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--accent); font-weight: 700; white-space: nowrap; background: var(--white); padding: 0 3px; }
+    .gantt-milestone { position: absolute; top: 50%; transform: translate(-50%, -50%); z-index: 4; cursor: pointer; }
+    .gantt-diamond { width: 14px; height: 14px; border-radius: 2px; transform: rotate(45deg); display: block; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    .gantt-milestone-label { position: absolute; top: 50%; left: 18px; transform: translateY(-50%); font-size: 11px; font-weight: 600; white-space: nowrap; color: var(--text); background: rgba(255,255,255,.9); padding: 1px 4px; border-radius: 3px; pointer-events: none; }
+    .gantt-milestone-days { font-size: 10px; font-weight: 700; color: inherit; margin-left: 4px; }
+    .gantt-project-label { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #fff; padding: 7px 14px; border-radius: 7px; margin: 18px 0 10px; }
+    .gantt-project-label .gantt-project-count { font-size: 10px; font-weight: 600; opacity: .8; margin-left: auto; text-transform: none; letter-spacing: 0; }
+    .log-body { max-height: 300px; overflow-y: auto; }
+    .log-entry { padding: 10px 18px; border-bottom: 1px solid #f1f5f9; font-size: 12.5px; display: flex; align-items: flex-start; gap: 10px; }
+    .log-entry:last-child { border-bottom: none; }
+    .log-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .log-time { color: var(--muted); flex-shrink: 0; font-size: 11px; min-width: 130px; }
+    .filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-chip { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--muted); transition: all .15s; }
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: #1e293b; color: #fff; padding: 12px 18px; border-radius: 9px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,.2); display: flex; align-items: center; gap: 10px; animation: slideUp .2s ease; min-width: 280px; }
+    .toast.success { border-left: 4px solid var(--green); } .toast.error { border-left: 4px solid var(--red); } .toast.warning { border-left: 4px solid #f59e0b; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ── CONTENT ── */
-    .content { padding: 28px; flex: 1; }
-    .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    /* LOGIN */
+    #login-screen { position: fixed; inset: 0; background: #0f172a; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .login-card { background: #fff; border-radius: 16px; padding: 40px 44px; width: 100%; max-width: 420px; box-shadow: 0 25px 60px rgba(0,0,0,.35); }
+    .login-logo { text-align: center; margin-bottom: 28px; }
+    .login-logo .brand-name { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -.5px; }
+    .login-logo .brand-sub { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+    .login-logo .brand-divider { width: 32px; height: 3px; background: var(--accent); border-radius: 99px; margin: 12px auto 0; }
+    .login-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; text-align: center; }
+    .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px; }
+    .login-group { margin-bottom: 16px; }
+    .login-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .login-group input { width: 100%; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text); outline: none; font-family: inherit; transition: border-color .15s; }
+    .login-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+    .login-btn { width: 100%; padding: 11px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 14px; font-weight: 700; border: none; cursor: pointer; transition: background .15s; margin-top: 8px; }
+    .login-btn:hover { background: #4338ca; }
+    .login-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .login-error { background: var(--red-bg); color: var(--red); border-radius: 7px; padding: 10px 14px; font-size: 13px; margin-top: 12px; display: none; }
 
-    /* ── CARDS ── */
-    .project-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 32px; }
-    .project-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; cursor: pointer; border: 2px solid transparent; transition: all .15s; }
-    .project-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
-    .project-card.active { border-color: var(--accent); }
-    .pc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .pc-name { font-size: 15px; font-weight: 700; }
-    .pc-client { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .pc-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
-    .badge-active { background: var(--green-bg); color: var(--green); }
-    .badge-completed { background: var(--grey-bg); color: var(--grey); }
+    /* ADMIN */
+    .admin-badge { display: inline-flex; align-items: center; gap: 4px; background: #fef3c7; color: #92400e; border-radius: 5px; padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: .4px; }
+    .user-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .user-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .user-card-name { font-size: 14px; font-weight: 700; }
+    .user-card-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .project-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
+    .project-toggle { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: all .15s; font-size: 12.5px; font-weight: 600; color: var(--muted); user-select: none; }
+    .project-toggle.granted { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .project-toggle:hover { border-color: var(--accent); }
 
-    /* ── BIG PROGRESS ── */
-    .pc-progress-big { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-    .pc-pct { font-size: 36px; font-weight: 800; color: var(--accent); line-height: 1; }
-    .pc-pct-right { display: flex; flex-direction: column; gap: 2px; }
-    .pc-pct-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-    .pc-pct-count { font-size: 13px; font-weight: 600; color: var(--text); }
-    .progress-bar { height: 5px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
+    /* ACCESS PENDING */
+    .access-pending { text-align: center; padding: 80px 40px; }
+    .access-pending h2 { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+    .access-pending p { font-size: 14px; color: var(--muted); line-height: 1.7; }
 
-    /* ── DETAIL VIEW ── */
-    .detail-panel { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-    .detail-header { padding: 22px 26px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-    .detail-title { font-size: 19px; font-weight: 700; }
-    .detail-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
-    .detail-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
-    .btn { padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: #4338ca; }
-    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    .btn-outline:hover { background: var(--bg); }
-    .btn-sm { padding: 4px 10px; font-size: 12px; }
-
-    /* ── NEXT MILESTONE BANNER ── */
-    .next-milestone-banner { margin: 16px 26px; padding: 14px 18px; background: linear-gradient(135deg, #ede9fe 0%, #dbeafe 100%); border-radius: 10px; border: 1px solid #c4b5fd; display: flex; align-items: center; gap: 16px; }
-    .nmbanner-icon { font-size: 22px; flex-shrink: 0; }
-    .nmbanner-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #6d28d9; margin-bottom: 3px; }
-    .nmbanner-name { font-size: 14px; font-weight: 700; color: #1e293b; }
-    .nmbanner-date { font-size: 12px; color: #4f46e5; font-weight: 600; margin-top: 2px; }
-    .nmbanner-days { margin-left: auto; text-align: right; flex-shrink: 0; }
-    .nmbanner-daysnum { font-size: 28px; font-weight: 800; color: #4f46e5; line-height: 1; }
-    .nmbanner-dayslabel { font-size: 11px; color: #6d28d9; font-weight: 600; }
-
-    /* ── CLIENT PROGRESS BAR (bigger) ── */
-    .client-progress-wrap { margin: 0 26px 16px; padding: 16px 20px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); display: flex; align-items: center; gap: 20px; }
-    .cp-pct { font-size: 42px; font-weight: 800; color: var(--accent); line-height: 1; }
-    .cp-right { flex: 1; }
-    .cp-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin-bottom: 6px; }
-    .cp-count { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-    .cp-bar { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
-    .cp-fill { height: 100%; background: var(--accent); border-radius: 99px; }
-
-    /* ── TABS ── */
-    .detail-tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 26px; }
-    .detail-tab { padding: 12px 16px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
-    .detail-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .detail-tab-content { padding: 24px 26px; }
-
-    /* ── TABLE ── */
-    .deliverables-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .deliverables-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); padding: 10px 12px; border-bottom: 2px solid var(--border); white-space: nowrap; }
-    .deliverables-table td { padding: 11px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
-    .deliverables-table tr:last-child td { border-bottom: none; }
-    .deliverables-table tr:hover td { background: #fafbff; }
-    .deliverables-table tr.row-done td { background: #f9fafb; }
-    .deliverables-table tr.row-done .deliv-name { text-decoration: line-through; color: var(--muted); }
-
-    /* ── STATUS BADGES ── */
-    .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
-    .status-done    { background: var(--green-bg);  color: var(--green); }
-    .status-urgent  { background: var(--red-bg);    color: var(--red); }
-    .status-soon    { background: var(--yellow-bg); color: var(--yellow); }
-    .status-upcoming{ background: var(--blue-bg);   color: var(--blue); }
-    .status-na      { background: var(--grey-bg);   color: var(--grey); }
-
-    /* ── COMPLETE TOGGLE BUTTON ── */
-    .complete-btn { width: 22px; height: 22px; border-radius: 5px; border: 2px solid #cbd5e1; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
-    .complete-btn.done { background: var(--green); border-color: var(--green); }
-    .complete-btn.done svg { color: #fff; }
-    .complete-btn:hover:not(.done) { border-color: var(--green); background: var(--green-bg); }
-
-    /* ── OWNER CHIP ── */
-    .owner-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: var(--accent-light); color: var(--accent); white-space: nowrap; }
-
-    /* ── NOTES ── */
-    .note-internal { font-size: 12px; color: #7c3aed; background: #f5f3ff; padding: 4px 8px; border-radius: 5px; border-left: 3px solid #7c3aed; margin-top: 4px; }
-    .note-client   { font-size: 12px; color: #1d4ed8; background: #eff6ff; padding: 4px 8px; border-radius: 5px; border-left: 3px solid #3b82f6; margin-top: 4px; }
-    .note-label    { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; opacity: .7; }
-
-    /* ── COMMENTS ── */
-    .comment-toggle-btn { font-size: 11px; color: var(--accent); cursor: pointer; background: none; border: none; padding: 2px 0; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-    .comment-toggle-btn:hover { text-decoration: underline; }
-    .comments-section { margin-top: 8px; padding: 10px; background: #fafbff; border-radius: 8px; border: 1px solid #e8edff; }
-    .comment-item { display: flex; gap: 8px; margin-bottom: 8px; }
-    .comment-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 1px; }
-    .comment-body { flex: 1; }
-    .comment-meta { font-size: 10px; color: var(--muted); margin-bottom: 2px; }
-    .comment-text { font-size: 12.5px; }
-    .comment-input-row { display: flex; gap: 6px; margin-top: 6px; }
-    .comment-input { flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12.5px; font-family: inherit; resize: none; min-height: 34px; }
-    .comment-input:focus { outline: none; border-color: var(--accent); }
-    .comment-submit-btn { padding: 6px 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .comment-submit-btn:hover { background: #4338ca; }
-
-    /* ── STAKEHOLDERS ── */
-    .stakeholder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-    .stakeholder-card { background: var(--bg); border-radius: 8px; padding: 14px; border: 1px solid var(--border); }
-    .sk-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-    .sk-role { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-    .sk-email { font-size: 12px; color: var(--accent); text-decoration: none; }
-    .sk-email:hover { text-decoration: underline; }
-
-    /* ── ACTIVITY LOG ── */
-    .log-list { display: flex; flex-direction: column; gap: 8px; }
-    .log-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border-radius: 8px; background: var(--bg); }
-    .log-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-    .log-dot.success { background: var(--green); }
-    .log-dot.warning { background: #f59e0b; }
-    .log-dot.info    { background: var(--accent); }
-    .log-msg  { font-size: 13px; flex: 1; }
-    .log-time { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-
-    /* ── AUTH ── */
-    #auth-screen { position: fixed; inset: 0; background: linear-gradient(135deg, #1e1b4b 0%, #1e3a5f 100%); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-    .auth-box { background: #fff; border-radius: 16px; padding: 40px 36px; width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
-    .auth-brand { font-size: 20px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
-    .auth-title { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
-    .auth-field { margin-bottom: 16px; }
-    .auth-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-    .auth-field input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-family: inherit; transition: border-color .15s; }
-    .auth-field input:focus { outline: none; border-color: var(--accent); }
-    .auth-submit { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background .15s; }
-    .auth-submit:hover { background: #4338ca; }
-    .auth-submit:disabled { opacity: .6; cursor: not-allowed; }
-    .auth-error { font-size: 13px; color: var(--red); margin-top: 12px; text-align: center; min-height: 18px; }
-
-    /* ── TOAST ── */
-    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 9999; opacity: 0; transition: opacity .3s; pointer-events: none; box-shadow: var(--shadow-md); }
-    .toast.show { opacity: 1; }
-    .toast.success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
-    .toast.error   { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
-    .toast.info    { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
-    .toast.warn    { background: #fef9c3; color: #b45309; border: 1px solid #fde68a; }
-
-    /* ── CLIENT VIEW HEADER ── */
-    .client-header-bar { background: linear-gradient(135deg, #1e1b4b 0%, #1e3a5f 100%); padding: 18px 28px; display: flex; align-items: center; gap: 16px; }
-    .client-header-bar .brand-name { font-size: 20px; font-weight: 800; color: #fff; }
-    .client-header-bar .brand-sub  { font-size: 12px; color: #a5b4fc; margin-top: 2px; }
-    .client-banner-note { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 12.5px; padding: 10px 20px; text-align: center; }
-
-    /* ── PRINT ── */
-    @media print {
-      .sidebar, .topbar, .auth-screen, .toast, #view-toggle-wrap, .detail-actions, .complete-btn, .comment-toggle-btn, .comment-input-row, .btn-print { display: none !important; }
-      body { background: white; }
-      .main { margin-left: 0; }
-      .content { padding: 10px; }
-      .project-cards { display: none; }
-      .detail-panel { box-shadow: none; border: 1px solid #ddd; }
-      .deliverables-table th, .deliverables-table td { font-size: 11px; padding: 6px 8px; }
-      .next-milestone-banner { break-inside: avoid; }
-    }
-
-    /* ── MISC ── */
-    .back-btn { font-size: 13px; color: var(--accent); background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-bottom: 16px; padding: 0; }
-    .back-btn:hover { text-decoration: underline; }
-    .empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
-    .client-preview-note { background: #fef9c3; border: 1px solid #fde68a; color: #92400e; font-size: 12px; padding: 8px 14px; border-radius: 7px; display: flex; align-items: center; gap: 6px; }
-    .source-tag { font-size: 11px; color: var(--muted); }
-    .completed-meta { font-size: 11px; color: var(--green); margin-top: 2px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
   </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen">
-  <div class="auth-box">
-    <div class="auth-brand">Incisiv</div>
-    <div class="auth-title">Project Deadline Tracker — Sign In</div>
-    <div class="auth-field">
-      <label>Email</label>
-      <input type="email" id="auth-email" placeholder="you@company.com" autocomplete="email" />
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="brand-name">Incisiv</div>
+      <div class="brand-sub">Project Tracker</div>
+      <div class="brand-divider"></div>
     </div>
-    <div class="auth-field">
+    <div class="login-title">Sign in to your account</div>
+    <div class="login-sub">Access is granted by invitation only.</div>
+    <div class="login-group">
+      <label>Email address</label>
+      <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+    </div>
+    <div class="login-group">
       <label>Password</label>
-      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()" />
     </div>
-    <button class="auth-submit" id="auth-btn" onclick="signIn()">Sign In</button>
-    <div class="auth-error" id="auth-error"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
   </div>
 </div>
 
-<!-- MAIN APP (hidden until logged in) -->
-<div id="app" style="display:none; width:100%;">
-
-  <!-- CLIENT VIEW HEADER (only shown in client preview mode) -->
-  <div id="client-header" style="display:none;">
-    <div class="client-header-bar">
-      <div>
-        <div class="brand-name">Incisiv</div>
-        <div class="brand-sub">Project Status Report</div>
-      </div>
-    </div>
-    <div class="client-banner-note">📋 This is a read-only client view. Showing confirmed milestones and delivery dates.</div>
+<!-- APP SIDEBAR -->
+<aside class="sidebar" id="app-sidebar" style="display:none;">
+  <div class="sidebar-logo">
+    <div class="brand">Incisiv</div>
+    <div class="sub">Deadline Tracker</div>
   </div>
-
-  <!-- SIDEBAR -->
-  <nav class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <div class="brand">Incisiv</div>
-      <div class="sub">Project Tracker</div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Workspace</div>
+    <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
     </div>
-    <div class="sidebar-nav">
-      <div class="nav-label">Navigation</div>
-      <div class="nav-item active" onclick="showSection('dashboard')" id="nav-dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </div>
-      <div class="nav-item" onclick="showSection('timeline')" id="nav-timeline">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        Timeline
-      </div>
-      <div class="nav-item" id="nav-activity" onclick="showSection('activity')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Activity Log
-      </div>
+    <div class="nav-item" onclick="navigate('all-deliverables')" id="nav-all-deliverables">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      All Deliverables
     </div>
-    <div class="sidebar-footer">
-      <div class="sidebar-stat"><span class="label">Active Projects</span><span class="val" id="stat-active">—</span></div>
-      <div class="sidebar-stat"><span class="label">Due This Week</span><span class="val yellow" id="stat-week">—</span></div>
-      <div class="sidebar-stat"><span class="label">Overdue</span><span class="val red" id="stat-overdue">—</span></div>
-      <div class="user-pill" onclick="signOut()">
-        <div class="user-avatar" id="user-avatar">?</div>
-        <div class="user-info">
-          <div class="user-name" id="user-name-display">Loading…</div>
-          <div class="user-role">Click to sign out</div>
-        </div>
-      </div>
+    <div class="nav-item" onclick="navigate('log')" id="nav-log">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Activity Log
     </div>
+    <div class="nav-item" onclick="navigate('admin')" id="nav-admin" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Admin Panel
+    </div>
+    <div class="nav-label" style="margin-top:12px;">Projects</div>
+    <div id="sidebar-projects"></div>
   </nav>
-
-  <!-- MAIN CONTENT -->
-  <div class="main">
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div class="page-title" id="topbar-title">Dashboard</div>
-      <div class="topbar-right">
-        <span class="synced-label" id="synced-label"></span>
-        <div class="view-toggle" id="view-toggle-wrap" style="display:none;">
-          <button class="view-toggle-btn active" id="btn-internal" onclick="setViewMode('internal')">🏢 Internal</button>
-          <button class="view-toggle-btn" id="btn-client" onclick="setViewMode('client')">👁 Client Preview</button>
-        </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-stat"><span class="label">Due This Week</span><span class="val yellow" id="sb-week">—</span></div>
+    <div class="sidebar-stat"><span class="label">Overdue</span><span class="val red" id="sb-overdue">—</span></div>
+    <div class="user-pill" onclick="doLogout()" title="Click to sign out">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name-display">…</div>
+        <div class="user-role" id="user-role-display">Sign out ↗</div>
       </div>
     </div>
+  </div>
+</aside>
 
-    <div class="content" id="content-area">
-      <div class="empty-state">Loading…</div>
+<!-- APP MAIN -->
+<main class="main" id="app-main" style="display:none;">
+  <div class="topbar">
+    <div><span class="page-title" id="page-title">Dashboard</span></div>
+    <div class="topbar-right" id="topbar-right">
+      <div class="view-toggle" id="view-toggle-wrap" style="display:none;">
+        <button class="view-toggle-btn active" id="btn-internal" data-mode="internal" onclick="setViewMode('internal')">🏢 Internal</button>
+        <button class="view-toggle-btn" id="btn-client" data-mode="client" onclick="setViewMode('client')">👁 Client Preview</button>
+      </div>
     </div>
   </div>
+  <div class="client-mode-banner" id="client-mode-banner" style="display:none;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    Client Preview — You're viewing as your client sees it. Stakeholder details and source files are hidden.
+  </div>
+  <div class="content" id="main-content"></div>
+</main>
 
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<div id="toast-container"></div>
 
 <script>
-// ═══════════════════════════════════════════════════
-//  CONFIG
-// ═══════════════════════════════════════════════════
-const SUPABASE_URL = 'https://sreyiojexannfsxrblxu.supabase.co';
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://sreyiojexannfsxrblxu.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyZXlpb2pleGFubmZzeHJibHh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4Nzc3ODAsImV4cCI6MjA5MDQ1Mzc4MH0.u0yYk9wR0-_ITZtKhdkkKUf7rjjcPQoSzWnzFstTIpk';
-const DATA_URL = 'data.json';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ═══════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════
+// Pre-warm Supabase immediately so it's awake before you hit Sign In
+fetch(SUPABASE_URL + '/auth/v1/settings', { headers: { apikey: SUPABASE_ANON } }).catch(() => {});
+
+const ADMIN_EMAIL = 'raunak.taneja@incisiv.com';
+
 let currentUser    = null;
-let isIncisiv      = false;
-let clientView     = false;
-let projects       = [];
-let globalLogs     = [];
-let selectedProject= null;
-let activeTab      = 'deliverables';
-let currentSection = 'dashboard';
-let lastSynced     = null;
-let syncedLabelTimer = null;
+let isAdmin        = false;
+let isIncisiv      = false;   // any @incisiv.com user
+let clientView     = false;   // true = external/client view, false = internal view
+let allProjects    = [];   // from data.json
+let visibleProjects= [];   // filtered for this user
+let userAccessMap  = {};   // { userId: [projectId, …] } (admin only)
+let allUsers       = [];   // client_profiles rows (admin only)
 
-let trackerCompletions = {}; // "projectId:delivId" → {completed, completedAt, by}
-let trackerComments    = {}; // "projectId:delivId" → [{text, author, ts}]
-let openCommentKeys    = new Set();
-let supabaseReady      = false;
+// ── SEED FALLBACK ─────────────────────────────────────────────────────────────
+const SEED_PROJECTS = [{"id":"direct-spend-2026","name":"2026 Direct Spend Study","client":"Coupa","type":"Primary Research","startDate":"2026-02-04","finalDeliveryDate":"2026-04-13","status":"active","notes":"State of the Industry Study in partnership with Coupa. 125 respondents — Director level+ from $750M+ revenue orgs.","stakeholders":[{"name":"Raunak Taneja","email":"raunak.taneja@incisiv.com","role":"Project Manager (Incisiv)"},{"name":"Gaurav Pant","email":"gaurav@incisiv.com","role":"Lead (Incisiv)"},{"name":"Arlena Joyner","email":"arlena.joyner@coupa.com","role":"Sr Manager (Coupa)"},{"name":"Emily Kono","email":"emily.kono@coupa.com","role":"Sr Director (Coupa)"}],"deliverables":[{"id":"d1","name":"Kick Off Deck","dueDate":"2026-02-04","dateType":"confirmed","completed":true,"completedAt":"2026-02-04T00:00:00.000Z"},{"id":"d2","name":"Survey Draft Shared","dueDate":"2026-02-06","dateType":"confirmed","completed":true,"completedAt":"2026-02-06T00:00:00.000Z"},{"id":"d3","name":"Survey Design (Finalized)","dueDate":"2026-02-18","dateType":"confirmed","completed":true,"completedAt":"2026-02-18T00:00:00.000Z"},{"id":"d4","name":"Field Survey Launch","dueDate":"2026-02-20","dateType":"confirmed","completed":true,"completedAt":"2026-02-20T00:00:00.000Z"},{"id":"d5","name":"Survey Fieldwork & Analysis — Close Survey","dueDate":"2026-03-20","dateType":"confirmed","completed":true,"completedAt":"2026-03-20T00:00:00.000Z"},{"id":"d6","name":"Data Readout — Aggregate + 3 Industry Readouts","dueDate":"2026-03-25","dateType":"confirmed","completed":true,"completedAt":"2026-03-25T00:00:00.000Z"},{"id":"d7","name":"Playbook Draft for Review","dueDate":"2026-03-30","dateType":"confirmed","completed":false},{"id":"d8","name":"Playbook Feedback from Coupa","dueDate":"2026-04-06","dateType":"confirmed","completed":false},{"id":"d9","name":"Final Playbook (Flagship Report)","dueDate":"2026-04-13","dateType":"confirmed","completed":false}],"logs":[]}];
 
-// ═══════════════════════════════════════════════════
-//  AUTH
-// ═══════════════════════════════════════════════════
-async function signIn() {
-  const email    = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-  const btn      = document.getElementById('auth-btn');
-  const errEl    = document.getElementById('auth-error');
-  errEl.textContent = '';
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-error');
+  err.style.display = 'none';
+  if (!email || !pass) { showLoginError('Please enter your email and password.'); return; }
   btn.disabled = true; btn.textContent = 'Signing in…';
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
   if (error) {
-    errEl.textContent = error.message;
+    const friendly = /invalid.login|invalid.credentials|email.not.confirmed|wrong.password/i.test(error.message)
+      ? 'Incorrect email or password. Please try again.'
+      : /rate.limit/i.test(error.message)
+      ? 'Too many attempts. Please wait a moment and try again.'
+      : error.message;
+    showLoginError(friendly);
     btn.disabled = false; btn.textContent = 'Sign In';
   }
 }
-
-async function signOut() {
+function showLoginError(msg) {
+  const e = document.getElementById('login-error');
+  e.textContent = msg; e.style.display = 'block';
+}
+function doLogout() {
+  // Reset UI instantly — don't wait for Supabase round-trip
+  currentUser = null; isAdmin = false; isIncisiv = false; clientView = false; visibleProjects = []; allUsers = [];
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-sidebar').style.display  = 'none';
+  document.getElementById('app-main').style.display     = 'none';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  const btn = document.getElementById('login-btn');
+  btn.disabled = false; btn.textContent = 'Sign In';
+  // Clear session in background — fire and forget
   sb.auth.signOut().catch(() => {});
-  currentUser = null;
-  document.getElementById('auth-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
 }
 
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) {
-    currentUser = session.user;
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    await mountApp();
-  } else if (event === 'SIGNED_OUT') {
-    document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-  }
-});
-
-// Pre-warm
-sb.auth.getSession().then(({ data }) => {
-  if (!data.session) {
-    document.getElementById('auth-email').focus();
-  }
-});
-
-document.getElementById('auth-password').addEventListener('keydown', e => {
-  if (e.key === 'Enter') signIn();
-});
-
-// ═══════════════════════════════════════════════════
-//  MOUNT
-// ═══════════════════════════════════════════════════
-async function mountApp() {
-  isIncisiv = currentUser.email.toLowerCase().endsWith('@incisiv.com');
-
-  // User pill
-  const initials = currentUser.email.slice(0,2).toUpperCase();
-  document.getElementById('user-avatar').textContent = initials;
-  document.getElementById('user-name-display').textContent = currentUser.email.split('@')[0];
-
-  // Show/hide toggle
-  document.getElementById('view-toggle-wrap').style.display = isIncisiv ? 'flex' : 'none';
-
-  // Non-incisiv users always see client view — apply layout immediately
-  if (!isIncisiv) {
-    clientView = true;
-    document.getElementById('sidebar').style.display = 'none';
-    document.getElementById('client-header').style.display = 'block';
-    document.querySelector('.main').style.marginLeft = '0';
-  }
-
-  // Show/hide activity log nav (internal only)
-  document.getElementById('nav-activity').style.display = isIncisiv ? 'flex' : 'none';
-
-  // Load data
-  await loadData();
-  await loadSupabaseState();
-
-  // Render
-  render();
-
-  // Start sync label refresh
-  startSyncedLabelTimer();
-}
-
-// ═══════════════════════════════════════════════════
-//  DATA LOADING
-// ═══════════════════════════════════════════════════
-async function loadData() {
-  try {
-    const res = await fetch(DATA_URL + '?t=' + Date.now());
-    const json = await res.json();
-    projects   = json.projects   || [];
-    globalLogs = json.logs       || [];
-    lastSynced = Date.now();
-    updateSyncedLabel();
-  } catch (e) {
-    showToast('Could not load project data', 'error');
-  }
-}
-
-async function loadSupabaseState() {
-  try {
-    const { data, error } = await sb.from('tracker_updates').select('*');
-    if (error) {
-      if (error.code === '42P01') {
-        // Table doesn't exist yet
-        showToast('⚠️ Run the tracker_updates SQL in Supabase to enable comments & completions', 'warn');
-        return; // leave supabaseReady = false
-      }
-      // Any other error — Supabase is reachable, table exists, mark ready anyway
-      supabaseReady = true;
-      return;
-    }
-    supabaseReady = true;
-    trackerCompletions = {};
-    trackerComments    = {};
-    for (const row of (data || [])) {
-      const key = `${row.project_id}:${row.deliverable_id}`;
-      if (row.type === 'completion') {
-        trackerCompletions[key] = { completed: row.data.completed, completedAt: row.created_at, by: row.created_by };
-      } else if (row.type === 'comment') {
-        if (!trackerComments[key]) trackerComments[key] = [];
-        trackerComments[key].push({ text: row.data.text, author: row.created_by, ts: row.created_at, id: row.id });
-      }
-    }
-    // Sort comments by time
-    for (const k of Object.keys(trackerComments)) {
-      trackerComments[k].sort((a,b) => new Date(a.ts) - new Date(b.ts));
-    }
-  } catch(e) {
-    // Network error — silently fail, supabaseReady stays false
-  }
-}
-
-// ═══════════════════════════════════════════════════
-//  SYNCED LABEL
-// ═══════════════════════════════════════════════════
-function updateSyncedLabel() {
-  if (!lastSynced) return;
-  const diff = Math.floor((Date.now() - lastSynced) / 60000);
-  const label = diff < 1 ? 'just now' : diff === 1 ? '1 min ago' : diff + ' min ago';
-  const el = document.getElementById('synced-label');
-  if (el) el.textContent = '🔄 Synced ' + label;
-}
-
-function startSyncedLabelTimer() {
-  if (syncedLabelTimer) clearInterval(syncedLabelTimer);
-  syncedLabelTimer = setInterval(updateSyncedLabel, 60000);
-}
-
-// ═══════════════════════════════════════════════════
-//  VIEW MODE
-// ═══════════════════════════════════════════════════
-function setViewMode(mode) {
-  clientView = (mode === 'client');
-  document.getElementById('btn-internal').classList.toggle('active', !clientView);
-  document.getElementById('btn-client').classList.toggle('active', clientView);
-  document.getElementById('client-header').style.display = clientView ? 'block' : 'none';
-  document.getElementById('sidebar').style.display = clientView ? 'none' : 'flex';
-  document.querySelector('.main').style.marginLeft = clientView ? '0' : 'var(--sidebar-width)';
-  // Hide activity log in client view
-  document.getElementById('nav-activity').style.display = (!clientView && isIncisiv) ? 'flex' : 'none';
-  render();
-}
-
-// ═══════════════════════════════════════════════════
-//  SECTIONS
-// ═══════════════════════════════════════════════════
-function showSection(section) {
-  currentSection = section;
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const navEl = document.getElementById('nav-' + section);
-  if (navEl) navEl.classList.add('active');
-  selectedProject = null;
-  render();
-}
-
-// ═══════════════════════════════════════════════════
-//  COMPLETION HELPERS
-// ═══════════════════════════════════════════════════
-function resolveCompletion(projectId, d) {
-  const key = `${projectId}:${d.id}`;
-  if (trackerCompletions[key] !== undefined) {
-    return { ...d, completed: trackerCompletions[key].completed, completedAt: trackerCompletions[key].completedAt, completedBy: trackerCompletions[key].by };
-  }
-  return d;
-}
-function resolvedDeliverables(p) {
-  return (p.deliverables || []).map(d => resolveCompletion(p.id, d));
-}
-
-async function markComplete(projectId, delivId, newState) {
-  if (!supabaseReady) { showToast('Supabase not ready — set up tracker_updates table first', 'warn'); return; }
-  const key = `${projectId}:${delivId}`;
-  // Optimistic update
-  trackerCompletions[key] = { completed: newState, completedAt: new Date().toISOString(), by: currentUser.email };
-  render();
-  try {
-    await sb.from('tracker_updates').insert({
-      type: 'completion', project_id: projectId, deliverable_id: delivId,
-      data: { completed: newState }, created_by: currentUser.email
-    });
-    showToast(newState ? '✅ Marked complete' : 'Marked incomplete', 'success');
-  } catch(e) {
-    showToast('Failed to save — ' + e.message, 'error');
-  }
-}
-
-// ═══════════════════════════════════════════════════
-//  COMMENTS
-// ═══════════════════════════════════════════════════
-function toggleComments(key) {
-  openCommentKeys.has(key) ? openCommentKeys.delete(key) : openCommentKeys.add(key);
-  render();
-}
-
-async function submitComment(projectId, delivId) {
-  if (!supabaseReady) { showToast('Supabase not ready', 'warn'); return; }
-  const key = `${projectId}:${delivId}`;
-  const inputEl = document.getElementById('comment-input-' + key.replace(/:/g, '-'));
-  if (!inputEl) return;
-  const text = inputEl.value.trim();
-  if (!text) return;
-  inputEl.value = '';
-  const newComment = { text, author: currentUser.email, ts: new Date().toISOString() };
-  if (!trackerComments[key]) trackerComments[key] = [];
-  trackerComments[key].push(newComment);
-  render();
-  try {
-    await sb.from('tracker_updates').insert({
-      type: 'comment', project_id: projectId, deliverable_id: delivId,
-      data: { text }, created_by: currentUser.email
-    });
-  } catch(e) {
-    showToast('Failed to post comment', 'error');
-  }
-}
-
-// ═══════════════════════════════════════════════════
-//  DATE HELPERS
-// ═══════════════════════════════════════════════════
-function daysUntil(dateStr) {
-  if (!dateStr) return null;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const d = new Date(dateStr); d.setHours(0,0,0,0);
-  return Math.round((d - today) / 86400000);
-}
-
-function fmtDate(dateStr) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function fmtDateTime(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-}
-
-function getStatus(d) {
-  if (d.completed) return 'done';
-  const days = daysUntil(d.dueDate);
-  if (days === null) return 'na';
-  if (days < 0)   return 'overdue';
-  if (days <= 3)  return 'urgent';
-  if (days <= 7)  return 'soon';
-  return 'upcoming';
-}
-
-function statusBadge(d) {
-  if (d.completed) return '<span class="status-badge status-done">✓ Done</span>';
-  const days = daysUntil(d.dueDate);
-  if (days === null) return '<span class="status-badge status-na">—</span>';
-  if (days < 0)  return `<span class="status-badge status-urgent">⚠ ${Math.abs(days)}d overdue</span>`;
-  if (days === 0) return '<span class="status-badge status-urgent">⚠ Due today</span>';
-  if (days <= 3) return `<span class="status-badge status-urgent">🔴 ${days}d left</span>`;
-  if (days <= 7) return `<span class="status-badge status-soon">🟡 ${days}d left</span>`;
-  return `<span class="status-badge status-upcoming">🔵 ${days}d left</span>`;
-}
-
-function calcProgress(p) {
-  const delivs = resolvedDeliverables(p);
-  const total = delivs.length;
-  const done  = delivs.filter(d => d.completed).length;
-  return { total, done, pct: total ? Math.round(done/total*100) : 0 };
-}
-
-function nextMilestone(p) {
-  const delivs = resolvedDeliverables(p);
-  const upcoming = delivs.filter(d => !d.completed && d.dueDate).sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
-  return upcoming[0] || null;
-}
-
-// ═══════════════════════════════════════════════════
-//  RENDER
-// ═══════════════════════════════════════════════════
-function render() {
-  const area = document.getElementById('content-area');
-  const titleEl = document.getElementById('topbar-title');
-
-  if (selectedProject) {
-    titleEl.textContent = selectedProject.name;
-    area.innerHTML = renderDetail(selectedProject);
+  if (!session) {
+    currentUser = null; isAdmin = false; isIncisiv = false; clientView = false; visibleProjects = []; allUsers = [];
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-sidebar').style.display  = 'none';
+    document.getElementById('app-main').style.display     = 'none';
+    const btn = document.getElementById('login-btn');
+    btn.disabled = false; btn.textContent = 'Sign In';
+    document.getElementById('login-error').style.display = 'none';
     return;
   }
+  currentUser = session.user;
+  isAdmin     = currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-  if (currentSection === 'dashboard') {
-    titleEl.textContent = 'Dashboard';
-    area.innerHTML = renderDashboard();
-  } else if (currentSection === 'timeline') {
-    titleEl.textContent = 'Timeline';
-    area.innerHTML = renderTimeline();
-  } else if (currentSection === 'activity') {
-    titleEl.textContent = 'Activity Log';
-    area.innerHTML = renderActivity();
+  // Show the app immediately with seed data — don't make user wait
+  allProjects     = SEED_PROJECTS;
+  visibleProjects = isAdmin ? SEED_PROJECTS : [];
+  mountApp();
+
+  // Load real data in the background, then silently refresh
+  await loadAppData();
+  render();
+});
+
+// ── DATA LOADING ──────────────────────────────────────────────────────────────
+async function loadAppData() {
+  // Fetch project data + access permissions in parallel
+  if (isAdmin) {
+    const [projRes] = await Promise.all([
+      fetch('./data.json?t=' + Date.now()).catch(() => null),
+      loadAdminData()
+    ]);
+    try { if (projRes && projRes.ok) allProjects = (await projRes.json()).projects || SEED_PROJECTS; }
+    catch(e) { allProjects = SEED_PROJECTS; }
+    visibleProjects = allProjects;
+  } else {
+    const [projRes, { data: access }] = await Promise.all([
+      fetch('./data.json?t=' + Date.now()).catch(() => null),
+      sb.from('project_access').select('project_id').eq('user_id', currentUser.id)
+    ]);
+    try { if (projRes && projRes.ok) allProjects = (await projRes.json()).projects || SEED_PROJECTS; }
+    catch(e) { allProjects = SEED_PROJECTS; }
+    const allowed = new Set((access || []).map(r => r.project_id));
+    visibleProjects = allProjects.filter(p => allowed.has(p.id));
   }
 }
 
-// ═══════════════════════════════════════════════════
-//  DASHBOARD
-// ═══════════════════════════════════════════════════
+async function loadAdminData() {
+  const [{ data: users }, { data: access }] = await Promise.all([
+    sb.from('client_profiles').select('*').order('created_at'),
+    sb.from('project_access').select('*')
+  ]);
+  allUsers = users || [];
+  userAccessMap = {};
+  (access || []).forEach(r => {
+    userAccessMap[r.user_id] = userAccessMap[r.user_id] || [];
+    userAccessMap[r.user_id].push(r.project_id);
+  });
+}
+
+function mountApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-sidebar').style.display  = 'flex';
+  document.getElementById('app-main').style.display     = 'flex';
+  document.getElementById('nav-admin').style.display    = isAdmin ? 'flex' : 'none';
+  const initials = currentUser.email.substring(0,2).toUpperCase();
+  document.getElementById('user-avatar').textContent        = initials;
+  document.getElementById('user-name-display').textContent  = currentUser.email;
+  document.getElementById('user-role-display').textContent  = isAdmin ? '● Admin · Sign out' : 'Sign out';
+  // View mode setup
+  isIncisiv  = currentUser.email.toLowerCase().endsWith('@incisiv.com');
+  clientView = !isIncisiv; // Incisiv staff default internal; external users always see client view
+  document.getElementById('view-toggle-wrap').style.display = isIncisiv ? 'flex' : 'none';
+  document.getElementById('btn-internal').classList.toggle('active', true);
+  document.getElementById('btn-client').classList.remove('active','client-active');
+  document.getElementById('client-mode-banner').style.display = clientView ? 'flex' : 'none';
+  render();
+}
+
+// ── STATUS HELPERS ────────────────────────────────────────────────────────────
+function calcStatus(dueStr, isComplete) {
+  if (isComplete) return {status:'complete',days:null,label:'Complete',cls:'badge-blue',dot:'#3b82f6',color:'#3b82f6'};
+  if (!dueStr)    return {status:'unknown',days:null,label:'No Date',cls:'badge-grey',dot:'#9ca3af',color:'#9ca3af'};
+  const now=new Date(); now.setHours(0,0,0,0);
+  const due=new Date(dueStr); due.setHours(0,0,0,0);
+  const diff=Math.round((due-now)/86400000);
+  if (diff<0)  return {status:'overdue',days:diff,label:`${Math.abs(diff)}d overdue`,cls:'badge-grey',dot:'#6b7280',color:'#6b7280'};
+  if (diff<=2) return {status:'critical',days:diff,label:diff===0?'Due Today':`${diff}d left`,cls:'badge-red',dot:'#ef4444',color:'#ef4444'};
+  if (diff<=6) return {status:'warning',days:diff,label:`${diff}d left`,cls:'badge-yellow',dot:'#eab308',color:'#ca8a04'};
+  return {status:'ok',days:diff,label:`${diff}d left`,cls:'badge-green',dot:'#22c55e',color:'#16a34a'};
+}
+function projectDot(p) {
+  const d=(p.deliverables||[]).filter(x=>!x.completed);
+  if(!d.length) return '#22c55e';
+  const st=d.map(x=>calcStatus(x.dueDate,x.completed).status);
+  if(st.includes('overdue'))  return '#6b7280';
+  if(st.includes('critical')) return '#ef4444';
+  if(st.includes('warning'))  return '#eab308';
+  return '#22c55e';
+}
+function projectProgress(p) {
+  const a=p.deliverables||[]; if(!a.length) return 0;
+  return Math.round(a.filter(d=>d.completed).length/a.length*100);
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let view='dashboard', pid=null;
+let delivSortCol='dueDate', delivSortDir=1, delivFilter='all', delivSearch='';
+
+function navigate(v, id) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('nav-'+v); if(el) el.classList.add('active');
+  view=v; pid=id||null; render();
+}
+function render() {
+  updateSidebar();
+  const c=document.getElementById('main-content'), t=document.getElementById('page-title');
+  if      (view==='dashboard')       { t.textContent='Dashboard'; c.innerHTML=renderDashboard(); }
+  else if (view==='all-deliverables'){ t.textContent='All Deliverables'; c.innerHTML=renderAllDeliverables(); }
+  else if (view==='log')             { t.textContent='Activity Log'; c.innerHTML=renderLog(); }
+  else if (view==='admin'&&isAdmin)  { t.textContent='Admin Panel'; c.innerHTML=renderAdminPanel(); }
+  else if (view==='project'&&pid)    { const p=visibleProjects.find(x=>x.id===pid); t.textContent=p?p.name:'Project'; c.innerHTML=renderProjectDetail(p); }
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
 function renderDashboard() {
-  // Update sidebar stats
-  const active = projects.filter(p => p.status === 'active').length;
-  let weekCount = 0, overdueCount = 0;
-  for (const p of projects) {
-    for (const d of resolvedDeliverables(p)) {
-      if (d.completed) continue;
-      const days = daysUntil(d.dueDate);
-      if (days !== null && days < 0) overdueCount++;
-      if (days !== null && days >= 0 && days <= 7) weekCount++;
-    }
-  }
-  document.getElementById('stat-active').textContent  = active;
-  document.getElementById('stat-week').textContent    = weekCount;
-  document.getElementById('stat-overdue').textContent = overdueCount;
-
-  const filtered = clientView ? projects.filter(p => p.status !== 'archived') : projects;
-
-  if (!filtered.length) return '<div class="empty-state">No projects found.</div>';
-
-  let html = '';
-
-  if (clientView) {
-    html += '<div style="margin-bottom:16px;"><div class="client-preview-note">👁 Client Preview — showing confirmed milestones only</div></div>';
-  }
-
-  html += '<div class="section-title">Projects</div><div class="project-cards">';
-  for (const p of filtered) {
-    const prog = calcProgress(p);
-    const nm = nextMilestone(p);
-    html += `
-    <div class="project-card" onclick="openProject('${p.id}')">
-      <div class="pc-header">
-        <div>
-          <div class="pc-name">${esc(p.name)}</div>
-          <div class="pc-client">${esc(p.client||'')}</div>
-        </div>
-        <span class="pc-badge ${p.status === 'active' ? 'badge-active' : 'badge-completed'}">${p.status||'active'}</span>
-      </div>
-      <div class="pc-progress-big">
-        <div class="pc-pct">${prog.pct}%</div>
-        <div class="pc-pct-right">
-          <div class="pc-pct-label">Complete</div>
-          <div class="pc-pct-count">${prog.done} / ${prog.total} milestones</div>
-        </div>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${prog.pct}%"></div></div>
-      ${nm ? `<div style="font-size:12px;color:var(--muted);margin-top:8px;">Next: <strong>${esc(nm.name)}</strong> — ${fmtDate(nm.dueDate)}</div>` : ''}
-    </div>`;
-  }
-  html += '</div>';
-  return html;
-}
-
-// ═══════════════════════════════════════════════════
-//  DETAIL
-// ═══════════════════════════════════════════════════
-function openProject(id) {
-  selectedProject = projects.find(p => p.id === id) || null;
-  activeTab = 'deliverables';
-  render();
-  window.scrollTo(0,0);
-}
-
-function renderDetail(p) {
-  const prog = calcProgress(p);
-  const nm   = nextMilestone(p);
-  const days = nm ? daysUntil(nm.dueDate) : null;
-
-  let html = `
-  <button class="back-btn" onclick="selectedProject=null; render();">
-    ← Back to Dashboard
-  </button>
-  <div class="detail-panel">
-    <div class="detail-header">
-      <div>
-        <div class="detail-title">${esc(p.name)}</div>
-        <div class="detail-meta">${esc(p.client||'')} · ${esc(p.type||'Primary Research')} · ${fmtDate(p.startDate)} → ${fmtDate(p.finalDeliveryDate)}</div>
-        ${p.notes && !clientView ? `<div style="font-size:13px;color:var(--muted);margin-top:6px;">${esc(p.notes)}</div>` : ''}
-      </div>
-      <div class="detail-actions">
-        <button class="btn btn-outline btn-sm btn-print" onclick="window.print()">🖨 Print / PDF</button>
-      </div>
-    </div>`;
-
-  // Next Milestone Banner
-  if (nm) {
-    const daysLabel = days === null ? '' : days < 0 ? `${Math.abs(days)} days overdue` : days === 0 ? 'Due today' : `${days} days away`;
-    const daysColor = days !== null && days < 0 ? '#dc2626' : days !== null && days <= 3 ? '#dc2626' : '#4f46e5';
-    html += `
-    <div class="next-milestone-banner">
-      <div class="nmbanner-icon">🎯</div>
-      <div>
-        <div class="nmbanner-label">Next Milestone</div>
-        <div class="nmbanner-name">${esc(nm.name)}</div>
-        <div class="nmbanner-date">${fmtDate(nm.dueDate)}</div>
-      </div>
-      <div class="nmbanner-days">
-        <div class="nmbanner-daysnum" style="color:${daysColor}">${days !== null ? Math.abs(days) : '—'}</div>
-        <div class="nmbanner-dayslabel" style="color:${daysColor}">${daysLabel}</div>
-      </div>
-    </div>`;
-  }
-
-  // Progress (bigger in client view)
-  if (clientView) {
-    html += `
-    <div class="client-progress-wrap">
-      <div class="cp-pct">${prog.pct}%</div>
-      <div class="cp-right">
-        <div class="cp-label">Overall Progress</div>
-        <div class="cp-count">${prog.done} of ${prog.total} milestones complete</div>
-        <div class="cp-bar"><div class="cp-fill" style="width:${prog.pct}%"></div></div>
-      </div>
-    </div>`;
-  }
-
-  // Tabs
-  const tabs = [{ id:'deliverables', label:'Deliverables' }];
-  if (!clientView) tabs.push({ id:'stakeholders', label:'Team & Stakeholders' });
-  if (!clientView && isIncisiv) tabs.push({ id:'activity', label:'Activity Log' });
-
-  html += '<div class="detail-tabs">';
-  for (const t of tabs) {
-    html += `<div class="detail-tab ${activeTab === t.id ? 'active' : ''}" onclick="setTab('${t.id}')">${t.label}</div>`;
-  }
-  html += '</div><div class="detail-tab-content">';
-
-  if (activeTab === 'deliverables')   html += renderDeliverablesTab(p);
-  else if (activeTab === 'stakeholders') html += renderStakeholdersTab(p);
-  else if (activeTab === 'activity')  html += renderActivityTab(p);
-
-  html += '</div></div>';
-  return html;
-}
-
-function setTab(tab) {
-  activeTab = tab;
-  render();
-}
-
-// ═══════════════════════════════════════════════════
-//  DELIVERABLES TAB
-// ═══════════════════════════════════════════════════
-function renderDeliverablesTab(p) {
-  const delivs = resolvedDeliverables(p);
-  if (!delivs.length) return '<div class="empty-state">No deliverables yet.</div>';
-
-  let html = '<table class="deliverables-table"><thead><tr>';
-
-  if (isIncisiv && !clientView) {
-    html += '<th style="width:30px"></th>'; // checkbox
-  }
-  html += '<th>#</th><th>Milestone</th>';
-  if (!clientView && isIncisiv) html += '<th>Owner</th>';
-  html += '<th>Due Date</th><th>Type</th><th>Status</th>';
-  if (!clientView && isIncisiv) html += '<th>Notes</th>';
-  else html += '<th>Notes</th>';
-  if (!clientView && isIncisiv) html += '<th>Comments</th>';
-  html += '</tr></thead><tbody>';
-
-  for (let i = 0; i < delivs.length; i++) {
-    const d = delivs[i];
-    const isDone = !!d.completed;
-    const key = `${p.id}:${d.id}`;
-    const keyHtml = key.replace(/:/g, '-');
-
-    html += `<tr class="${isDone ? 'row-done' : ''}">`;
-
-    // Checkbox (internal only)
-    if (isIncisiv && !clientView) {
-      html += `<td>
-        <button class="complete-btn ${isDone ? 'done' : ''}" onclick="markComplete('${p.id}','${d.id}',${!isDone})" title="${isDone ? 'Mark incomplete' : 'Mark complete'}">
-          ${isDone ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>` : ''}
-        </button>
-      </td>`;
-    }
-
-    // Index
-    html += `<td style="color:var(--muted);font-size:12px;">${i+1}</td>`;
-
-    // Name + completed meta
-    html += `<td>
-      <div class="deliv-name">${esc(d.name)}</div>
-      ${isDone && d.completedAt ? `<div class="completed-meta">✓ ${fmtDateTime(d.completedAt)}${d.completedBy ? ' by ' + d.completedBy.split('@')[0] : ''}</div>` : ''}
-    </td>`;
-
-    // Owner (internal only)
-    if (isIncisiv && !clientView) {
-      html += `<td>${d.owner ? `<span class="owner-chip">👤 ${esc(d.owner)}</span>` : '<span style="color:var(--muted);font-size:12px;">—</span>'}</td>`;
-    }
-
-    // Due date
-    html += `<td style="white-space:nowrap;">${fmtDate(d.dueDate)}</td>`;
-
-    // Date type / source
-    html += `<td><span class="source-tag">${d.dateType || 'confirmed'}</span></td>`;
-
-    // Status badge
-    html += `<td>${statusBadge(d)}</td>`;
-
-    // Notes
-    if (isIncisiv && !clientView) {
-      // Show both internal and client notes
-      let notesHtml = '';
-      if (d.internalNotes) {
-        notesHtml += `<div class="note-internal"><div class="note-label">Internal</div>${esc(d.internalNotes)}</div>`;
-      }
-      if (d.notes) {
-        notesHtml += `<div class="note-client"><div class="note-label">Client-facing</div>${esc(d.notes)}</div>`;
-      }
-      html += `<td>${notesHtml || '<span style="color:var(--muted);font-size:12px;">—</span>'}</td>`;
-    } else {
-      // Client view: only client-facing notes
-      html += `<td>${d.notes ? `<span style="font-size:12.5px;">${esc(d.notes)}</span>` : '<span style="color:var(--muted);font-size:12px;">—</span>'}</td>`;
-    }
-
-    // Comments (internal only)
-    if (isIncisiv && !clientView) {
-      const comments = trackerComments[key] || [];
-      const isOpen   = openCommentKeys.has(key);
-      html += `<td style="min-width:160px;">
-        <button class="comment-toggle-btn" onclick="toggleComments('${key}')">
-          💬 ${comments.length ? comments.length + ' comment' + (comments.length > 1 ? 's' : '') : 'Add comment'} ${isOpen ? '▲' : '▼'}
-        </button>
-        ${isOpen ? renderCommentSection(p.id, d.id, comments, key) : ''}
-      </td>`;
-    }
-
-    html += '</tr>';
-  }
-
-  html += '</tbody></table>';
-  return html;
-}
-
-function renderCommentSection(projectId, delivId, comments, key) {
-  const keyHtml = key.replace(/:/g, '-');
-  let html = '<div class="comments-section">';
-  if (!comments.length) {
-    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">No comments yet.</div>';
-  }
-  for (const c of comments) {
-    const initials = c.author ? c.author.slice(0,2).toUpperCase() : '??';
-    html += `
-    <div class="comment-item">
-      <div class="comment-avatar">${initials}</div>
-      <div class="comment-body">
-        <div class="comment-meta">${c.author ? c.author.split('@')[0] : 'Unknown'} · ${fmtDateTime(c.ts)}</div>
-        <div class="comment-text">${esc(c.text)}</div>
-      </div>
-    </div>`;
-  }
-  html += `
-  <div class="comment-input-row">
-    <textarea class="comment-input" id="comment-input-${keyHtml}" placeholder="Add a comment…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitComment('${projectId}','${delivId}')}"></textarea>
-    <button class="comment-submit-btn" onclick="submitComment('${projectId}','${delivId}')">Send</button>
+  const projects=visibleProjects.filter(p=>p.status!=='archived');
+  if(!projects.length) return `<div class="access-pending"><div style="font-size:56px;margin-bottom:20px;">🔒</div><h2>Access Pending</h2><p>You don't have access to any projects yet.<br/>Please contact <strong>Raunak Taneja</strong> at raunak.taneja@incisiv.com<br/>to be granted access.</p></div>`;
+  const allD=projects.flatMap(p=>(p.deliverables||[]).map(d=>({...d,projectName:p.name,projectId:p.id})));
+  const active  =projects.filter(p=>p.status==='active').length;
+  const overdue =allD.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='overdue').length;
+  const dueWeek =allD.filter(d=>{if(d.completed)return false;const s=calcStatus(d.dueDate);return s.days!==null&&s.days>=0&&s.days<=7;}).length;
+  const done    =allD.filter(d=>d.completed).length;
+  let h=`<div class="stats-grid">
+    <div class="stat-card s-blue"><div class="stat-label">Active Projects</div><div class="stat-val">${active}</div><div class="stat-hint">In progress</div></div>
+    <div class="stat-card s-yellow"><div class="stat-label">Due This Week</div><div class="stat-val">${dueWeek}</div><div class="stat-hint">Next 7 days</div></div>
+    <div class="stat-card s-red"><div class="stat-label">Overdue</div><div class="stat-val">${overdue}</div><div class="stat-hint">Need attention</div></div>
+    <div class="stat-card s-green"><div class="stat-label">Completed</div><div class="stat-val">${done}</div><div class="stat-hint">Deliverables done</div></div>
   </div>`;
-  html += '</div>';
-  return html;
-}
-
-// ═══════════════════════════════════════════════════
-//  STAKEHOLDERS TAB
-// ═══════════════════════════════════════════════════
-function renderStakeholdersTab(p) {
-  const stks = p.stakeholders || [];
-  if (!stks.length) return '<div class="empty-state">No stakeholders listed.</div>';
-  let html = '<div class="stakeholder-grid">';
-  for (const s of stks) {
-    html += `
-    <div class="stakeholder-card">
-      <div class="sk-name">${esc(s.name)}</div>
-      <div class="sk-role">${esc(s.role||'')}</div>
-      <a class="sk-email" href="mailto:${esc(s.email)}">${esc(s.email)}</a>
+  const upcoming=allD.filter(d=>{if(d.completed)return false;const s=calcStatus(d.dueDate);return s.days!==null&&s.days>=0&&s.days<=7;}).sort((a,b)=>new Date(a.dueDate)-new Date(b.dueDate));
+  if(upcoming.length){
+    h+=`<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 18px;margin-bottom:22px;"><div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:10px;">⏰ Upcoming This Week (${upcoming.length})</div><div style="display:flex;flex-wrap:wrap;gap:8px;">`;
+    upcoming.forEach(d=>{const s=calcStatus(d.dueDate);h+=`<div style="background:#fff;border:1px solid #fed7aa;border-radius:7px;padding:8px 12px;min-width:160px;cursor:pointer;" onclick="navigate('project','${d.projectId}')"><div style="font-size:11px;color:#92400e;font-weight:600;">${esc(d.projectName)}</div><div style="font-size:13px;font-weight:700;color:#1e293b;margin:2px 0;">${esc(d.name)}</div><span class="status-badge ${s.cls}"><span class="dot" style="background:${s.dot};"></span>${s.label}</span></div>`;});
+    h+=`</div></div>`;
+  }
+  h+=`<div class="section-header"><span class="section-title">Projects (${projects.length})</span></div><div class="projects-grid">`;
+  projects.forEach(p=>{
+    const delivs=p.deliverables||[], dot=projectDot(p), prog=projectProgress(p);
+    const cn={ok:delivs.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='ok').length,warning:delivs.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='warning').length,critical:delivs.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='critical').length,overdue:delivs.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='overdue').length,complete:delivs.filter(d=>d.completed).length};
+    h+=`<div class="project-card" onclick="navigate('project','${p.id}')">
+      <div class="project-card-header"><div><div class="project-name">${esc(p.name)}</div><div class="project-type">${esc(p.type||'')}${p.client&&p.client!==p.name?' · '+esc(p.client):''}</div></div><div class="project-status-dot" style="background:${dot};"></div></div>
+      <div class="project-card-body">
+        <div class="project-meta"><div class="meta-item"><strong>${fmtDate(p.startDate)}</strong>Start</div><div class="meta-item"><strong>${fmtDate(p.finalDeliveryDate)}</strong>Delivery</div><div class="meta-item"><strong>${delivs.length}</strong>Deliverables</div></div>
+        <div class="deliverable-summary">${cn.ok?`<span class="pill pill-green">✓ ${cn.ok} on track</span>`:''} ${cn.warning?`<span class="pill pill-yellow">⚡ ${cn.warning} soon</span>`:''} ${cn.critical?`<span class="pill pill-red">🔴 ${cn.critical} critical</span>`:''} ${cn.overdue?`<span class="pill pill-grey">⚫ ${cn.overdue} overdue</span>`:''} ${cn.complete?`<span class="pill pill-blue">✅ ${cn.complete} done</span>`:''}</div>
+      </div>
+      <div class="project-card-footer"><div class="progress-bar-wrap"><div class="progress-label"><span>Progress</span><span>${prog}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${prog}%;"></div></div></div><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();navigate('project','${p.id}')">View →</button></div>
     </div>`;
-  }
-  html += '</div>';
-  return html;
+  });
+  h+=`</div>`;
+  if(projects.length) h+=renderGantt(projects);
+  return h;
 }
 
-// ═══════════════════════════════════════════════════
-//  ACTIVITY TAB (per-project)
-// ═══════════════════════════════════════════════════
-function renderActivityTab(p) {
-  const logs = [...(p.logs||[])].reverse();
-  if (!logs.length) return '<div class="empty-state">No activity recorded yet.</div>';
-  let html = '<div class="log-list">';
-  for (const l of logs) {
-    const type = l.type === 'success' ? 'success' : l.type === 'warning' ? 'warning' : 'info';
-    html += `
-    <div class="log-item">
-      <div class="log-dot ${type}"></div>
-      <div class="log-msg">${esc(l.message)}</div>
-      <div class="log-time">${fmtDateTime(l.timestamp)}</div>
+// ── GANTT ─────────────────────────────────────────────────────────────────────
+function renderGantt(projects) {
+  const allD=projects.flatMap(p=>(p.deliverables||[]).filter(d=>d.dueDate).map(d=>({...d,projectName:p.name})));
+  if(!allD.length) return '';
+  const dates=allD.map(d=>new Date(d.dueDate));
+  const minD=new Date(Math.min(...dates)); const maxD=new Date(Math.max(...dates));
+  minD.setDate(minD.getDate()-5); maxD.setDate(maxD.getDate()+8);
+  const totalMs=maxD-minD;
+  const pct=d=>Math.max(1,Math.min(99,((new Date(d)-minD)/totalMs)*100));
+  const todayPct=Math.max(0,Math.min(100,((new Date()-minD)/totalMs)*100));
+  let ticks=''; for(let i=0;i<=5;i++){const d=new Date(minD.getTime()+(totalMs/5)*i);ticks+=`<div class="gantt-date-tick" style="left:${i/5*100}%;">${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`;}
+  let h=`<div class="gantt-wrap"><div class="gantt-header"><span class="gantt-header-title">Timeline Overview</span><div class="gantt-legend"><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#22c55e;"></div>7+ days</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#eab308;"></div>3–6 days</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#ef4444;"></div>1–2 days</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#3b82f6;"></div>Complete</div><div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#6b7280;"></div>Overdue</div></div></div><div class="gantt-body"><div class="gantt-date-header" style="margin-bottom:16px;">${ticks}</div>`;
+  const PROJECT_COLORS = ['#4f46e5','#ea580c','#0891b2','#16a34a','#7c3aed','#db2777'];
+  projects.forEach((p,pi)=>{
+    const delivs=(p.deliverables||[]).filter(d=>d.dueDate); if(!delivs.length) return;
+    const col = PROJECT_COLORS[pi % PROJECT_COLORS.length];
+    const done = (p.deliverables||[]).filter(d=>d.completed).length;
+    const total = (p.deliverables||[]).length;
+    h+=`<div class="gantt-project-label" style="background:${col};">
+      <span style="background:rgba(255,255,255,.2);border-radius:4px;padding:1px 7px;font-size:11px;">${pi+1}</span>
+      ${esc(p.name)}
+      ${p.client?`<span style="opacity:.75;font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;">· ${esc(p.client)}</span>`:''}
+      <span class="gantt-project-count">${done}/${total} complete</span>
     </div>`;
-  }
-  html += '</div>';
-  return html;
+    delivs.forEach(d=>{
+      const s=calcStatus(d.dueDate,d.completed), pos=pct(d.dueDate), lr=pos>75;
+      h+=`<div class="gantt-row"><div class="gantt-row-label">${d.completed?'<span style="color:var(--green);font-size:12px;flex-shrink:0;">✓</span>':''}<span title="${esc(d.name)}" style="${d.completed?'text-decoration:line-through;color:var(--muted);':''}">${esc(d.name)}</span></div><div class="gantt-track"><div class="gantt-today-line" style="left:${todayPct}%;"><div class="gantt-today-label">Today</div></div><div class="gantt-milestone" style="left:${pos}%;"><div class="gantt-diamond" style="background:${s.color};"></div><div class="gantt-milestone-label" style="${lr?'left:auto;right:18px;':'left:18px;'}">${fmtDate(d.dueDate)} <span class="gantt-milestone-days" style="color:${s.color};">${s.label}</span></div></div></div></div>`;
+    });
+  });
+  h+=`</div></div>`; return h;
 }
 
-// ═══════════════════════════════════════════════════
-//  TIMELINE SECTION
-// ═══════════════════════════════════════════════════
-function renderTimeline() {
-  // Gather all deliverables, sorted by due date
-  let all = [];
-  for (const p of projects) {
-    for (const d of resolvedDeliverables(p)) {
-      if (d.dueDate) all.push({ ...d, projectName: p.name, projectId: p.id });
-    }
-  }
-  all.sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+// ── ALL DELIVERABLES (view-only) ──────────────────────────────────────────────
+function renderAllDeliverables() {
+  const all=visibleProjects.flatMap(p=>(p.deliverables||[]).map(d=>({...d,projectName:p.name,projectId:p.id})));
+  const filtered=all.filter(d=>{
+    if(delivFilter==='active'  &&d.completed) return false;
+    if(delivFilter==='overdue' &&(d.completed||calcStatus(d.dueDate).status!=='overdue')) return false;
+    if(delivFilter==='critical'&&(d.completed||!['critical','warning'].includes(calcStatus(d.dueDate).status))) return false;
+    if(delivFilter==='complete'&&!d.completed) return false;
+    if(delivSearch){const q=delivSearch.toLowerCase();if(!d.name.toLowerCase().includes(q)&&!d.projectName.toLowerCase().includes(q))return false;}
+    return true;
+  }).sort((a,b)=>{
+    let av=a[delivSortCol]||'', bv=b[delivSortCol]||'';
+    if(delivSortCol==='dueDate'){av=av||'9999';bv=bv||'9999';}
+    if(delivSortCol==='days'){av=calcStatus(a.dueDate,a.completed).days??9999;bv=calcStatus(b.dueDate,b.completed).days??9999;}
+    return av<bv?-delivSortDir:av>bv?delivSortDir:0;
+  });
+  const arrow=c=>delivSortCol===c?(delivSortDir===1?' ↑':' ↓'):'';
+  let h=`<div class="filter-row">
+    ${['all','active','overdue','critical','complete'].map(f=>`<div class="filter-chip ${delivFilter===f?'active':''}" onclick="setDelivFilter('${f}')">${{all:'All',active:'Active',overdue:'⚫ Overdue',critical:'🔴 Critical / Soon',complete:'✅ Complete'}[f]}</div>`).join('')}
+    <div style="flex:1;"></div>
+    <div class="search-box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Search…" value="${esc(delivSearch)}" oninput="delivSearch=this.value;render()"/></div>
+  </div>
+  <div class="table-wrap"><div class="table-header"><span class="table-title">Deliverables (${filtered.length})</span></div>
+  <table><thead><tr>
+    <th onclick="sortD('name')">Deliverable${arrow('name')}</th>
+    <th onclick="sortD('projectName')">Project${arrow('projectName')}</th>
+    <th onclick="sortD('dueDate')">Due Date${arrow('dueDate')}</th>
+    <th onclick="sortD('days')">Status${arrow('days')}</th>
+    ${!clientView?`<th>Source</th>`:''}
+  </tr></thead><tbody>`;
+  if(!filtered.length) h+=`<tr><td colspan="${clientView?4:5}" style="text-align:center;padding:32px;color:var(--muted);">No deliverables found.</td></tr>`;
+  else filtered.forEach(d=>{
+    const s=calcStatus(d.dueDate,d.completed);
+    h+=`<tr style="${d.completed?'opacity:.55;':''}">
+      <td><strong>${esc(d.name)}</strong>${d.dateType==='estimated'?'<span class="badge-estimated">~est</span>':''}</td>
+      <td><span class="tag" onclick="navigate('project','${d.projectId}')">${esc(d.projectName)}</span></td>
+      <td>${d.dueDate?fmtDate(d.dueDate):'—'}</td>
+      <td><span class="status-badge ${s.cls}"><span class="dot" style="background:${s.dot};"></span>${s.label}</span></td>
+      ${!clientView?`<td><span class="source-file">${esc(d.sourceFile||'—')}</span></td>`:''}
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  return h;
+}
+function sortD(c){if(delivSortCol===c)delivSortDir*=-1;else{delivSortCol=c;delivSortDir=1;}render();}
+function setDelivFilter(f){delivFilter=f;render();}
 
-  // Group by month
-  const grouped = {};
-  for (const item of all) {
-    const d = new Date(item.dueDate);
-    const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(item);
-  }
-
-  if (!all.length) return '<div class="empty-state">No deliverables with due dates.</div>';
-
-  let html = '';
-  for (const [month, items] of Object.entries(grouped)) {
-    html += `<div class="section-title" style="margin-top:20px;">${month}</div>`;
-    html += '<table class="deliverables-table" style="margin-bottom:16px;"><thead><tr><th>Project</th><th>Milestone</th><th>Due Date</th><th>Status</th></tr></thead><tbody>';
-    for (const d of items) {
-      html += `<tr class="${d.completed ? 'row-done' : ''}">
-        <td style="color:var(--muted);font-size:12px;">${esc(d.projectName)}</td>
-        <td class="deliv-name">${esc(d.name)}</td>
-        <td style="white-space:nowrap;">${fmtDate(d.dueDate)}</td>
-        <td>${statusBadge(d)}</td>
-      </tr>`;
-    }
-    html += '</tbody></table>';
-  }
-  return html;
+// ── PROJECT DETAIL (view-only) ────────────────────────────────────────────────
+function renderProjectDetail(p) {
+  if(!p) return '<div class="empty-state"><p>Project not found.</p></div>';
+  const delivs=p.deliverables||[], dot=projectDot(p), prog=projectProgress(p);
+  let h=`<div style="font-size:12px;color:var(--muted);margin-bottom:12px;cursor:pointer;" onclick="navigate('dashboard')">← Back to Dashboard</div>
+  <div class="table-wrap" style="padding:20px 24px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="font-size:20px;font-weight:800;">${esc(p.name)}</div>
+      <div style="width:10px;height:10px;border-radius:50%;background:${dot};flex-shrink:0;"></div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px;">
+      <div style="font-size:12.5px;color:var(--muted);"><strong style="color:var(--text);display:block;">${esc(p.type||'—')}</strong>Type</div>
+      <div style="font-size:12.5px;color:var(--muted);"><strong style="color:var(--text);display:block;">${fmtDate(p.startDate)}</strong>Start</div>
+      <div style="font-size:12.5px;color:var(--muted);"><strong style="color:var(--text);display:block;">${fmtDate(p.finalDeliveryDate)}</strong>Final Delivery</div>
+      <div style="font-size:12.5px;color:var(--muted);"><strong style="color:var(--text);display:block;">${prog}%</strong>Progress</div>
+    </div>
+    ${p.notes?`<div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:10px;">${esc(p.notes)}</div>`:''}
+    ${!clientView&&p.stakeholders&&p.stakeholders.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;">${p.stakeholders.map(s=>`<span class="pill pill-accent" title="${esc(s.email)}">${esc(s.name)}${s.role?' ('+esc(s.role)+')':''}</span>`).join('')}</div>`:''}
+  </div>
+  <div class="table-wrap">
+    <div class="table-header"><span class="table-title">Deliverables (${delivs.length})</span></div>
+    <table><thead><tr><th>Deliverable</th><th>Due Date</th><th>Status</th>${!clientView?'<th>Source</th>':''}<th>Notes</th></tr></thead><tbody>`;
+  if(!delivs.length) h+=`<tr><td colspan="${clientView?4:5}" style="text-align:center;padding:32px;color:var(--muted);">No deliverables.</td></tr>`;
+  else [...delivs].sort((a,b)=>{if(a.completed&&!b.completed)return 1;if(!a.completed&&b.completed)return-1;return(a.dueDate||'9999')<(b.dueDate||'9999')?-1:1;}).forEach(d=>{
+    const s=calcStatus(d.dueDate,d.completed);
+    h+=`<tr style="${d.completed?'opacity:.55;':''}">
+      <td><strong>${esc(d.name)}</strong>${d.dateType==='estimated'?'<span class="badge-estimated">~est</span>':''}</td>
+      <td>${d.dueDate?fmtDate(d.dueDate):'—'}</td>
+      <td><span class="status-badge ${s.cls}"><span class="dot" style="background:${s.dot};"></span>${s.label}</span></td>
+      ${!clientView?`<td><span class="source-file">${esc(d.sourceFile||'—')}</span></td>`:''}
+      <td style="font-size:12px;color:var(--muted);">${esc(d.notes||'—')}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  return h;
 }
 
-// ═══════════════════════════════════════════════════
-//  GLOBAL ACTIVITY SECTION
-// ═══════════════════════════════════════════════════
-function renderActivity() {
-  if (!isIncisiv) return '<div class="empty-state">Not available.</div>';
-  const logs = [...(globalLogs||[])].reverse().slice(0, 100);
-  if (!logs.length) return '<div class="empty-state">No activity recorded yet.</div>';
-  let html = '<div class="log-list">';
-  for (const l of logs) {
-    const type = l.type === 'success' ? 'success' : l.type === 'warning' ? 'warning' : 'info';
-    html += `
-    <div class="log-item">
-      <div class="log-dot ${type}"></div>
-      <div class="log-msg">${esc(l.message)}</div>
-      <div class="log-time">${fmtDateTime(l.timestamp)}</div>
-    </div>`;
+// ── LOG ───────────────────────────────────────────────────────────────────────
+function renderLog() {
+  const logs=[];
+  visibleProjects.forEach(p=>(p.logs||[]).forEach(l=>logs.push({...l,project:p.name})));
+  const sorted=[...logs].sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,200);
+  if(!sorted.length) return `<div class="empty-state"><div style="font-size:48px">📋</div><p>No log entries.</p></div>`;
+  const colors={info:'#3b82f6',success:'#16a34a',warning:'#ca8a04',error:'#dc2626'};
+  let h=`<div class="table-wrap"><div class="table-header"><span class="table-title">Activity Log (${sorted.length})</span></div><div class="log-body">`;
+  sorted.forEach(l=>{h+=`<div class="log-entry"><div class="log-dot" style="background:${colors[l.type]||'#94a3b8'};"></div><div class="log-time">${l.timestamp?new Date(l.timestamp).toLocaleString():l.date||''}</div><div>${esc(l.message||l.action||'')}${l.project?` <span style="font-size:11px;color:var(--muted);">— ${esc(l.project)}</span>`:''}</div></div>`;});
+  h+=`</div></div>`;
+  return h;
+}
+
+// ── ADMIN PANEL ───────────────────────────────────────────────────────────────
+function renderAdminPanel() {
+  let h=`<div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#713f12;display:flex;align-items:center;gap:10px;">
+    <span style="font-size:18px;">🛡️</span>
+    <span>You're viewing as <strong>Admin</strong>. Create user accounts directly in the <a href="https://supabase.com/dashboard/project/sreyiojexannfsxrblxu/auth/users" target="_blank" style="color:#92400e;font-weight:700;text-decoration:underline;">Supabase dashboard</a> — users appear here after their first login.</span>
+  </div>`;
+
+  h+=`<div style="font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;">Client Access Management <span class="admin-badge">● ADMIN</span></div>`;
+
+  const clients=allUsers.filter(u=>u.email!==ADMIN_EMAIL);
+  if(!clients.length) {
+    h+=`<div class="table-wrap" style="padding:40px;text-align:center;color:var(--muted);">No client accounts yet. Create users in Supabase and they'll appear here after first login.</div>`;
+  } else {
+    clients.forEach(u=>{
+      const ua=userAccessMap[u.id]||[];
+      h+=`<div class="user-card">
+        <div class="user-card-header">
+          <div><div class="user-card-name">${esc(u.full_name||u.email)}</div><div class="user-card-email">${esc(u.email)}</div></div>
+          <div style="font-size:11px;color:var(--muted);">Joined ${u.created_at?new Date(u.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—'}</div>
+        </div>
+        <div style="font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:8px;">Project Access:</div>
+        <div class="project-checkboxes">`;
+      allProjects.forEach(p=>{
+        const granted=ua.includes(p.id);
+        h+=`<div class="project-toggle ${granted?'granted':''}" onclick="toggleAccess('${u.id}','${p.id}',${!granted},this)">${granted?'✓ ':''}${esc(p.name)}${p.client?` <span style="font-weight:400;opacity:.6;font-size:11px;">· ${esc(p.client)}</span>`:''}</div>`;
+      });
+      h+=`</div></div>`;
+    });
   }
-  html += '</div>';
-  return html;
+
+  h+=`<div style="font-size:15px;font-weight:700;margin:24px 0 14px;">All Projects Overview</div>
+  <div class="table-wrap"><table><thead><tr><th>Project</th><th>Client</th><th>Type</th><th>Final Delivery</th><th>Progress</th></tr></thead><tbody>`;
+  allProjects.forEach(p=>{
+    const prog=projectProgress(p);
+    h+=`<tr onclick="navigate('project','${p.id}')" style="cursor:pointer;"><td><strong>${esc(p.name)}</strong></td><td>${esc(p.client||'—')}</td><td>${esc(p.type||'—')}</td><td>${fmtDate(p.finalDeliveryDate)}</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${prog}%;"></div></div><span style="font-size:12px;color:var(--muted);">${prog}%</span></div></td></tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  return h;
 }
 
-// ═══════════════════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════════════════
-let _toastTimer = null;
-function showToast(msg, type='success') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast ${type} show`;
-  if (_toastTimer) clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { el.classList.remove('show'); }, 3000);
+async function toggleAccess(userId, projectId, grant, el) {
+  el.style.opacity='0.5'; el.style.pointerEvents='none';
+  if(grant){
+    const {error}=await sb.from('project_access').insert({user_id:userId,project_id:projectId});
+    if(!error){ userAccessMap[userId]=userAccessMap[userId]||[]; userAccessMap[userId].push(projectId); el.classList.add('granted'); el.textContent='✓ '+el.textContent.trim(); toast('Access granted.','success'); }
+    else { toast('Error: '+error.message,'error'); }
+  } else {
+    const {error}=await sb.from('project_access').delete().eq('user_id',userId).eq('project_id',projectId);
+    if(!error){ userAccessMap[userId]=(userAccessMap[userId]||[]).filter(id=>id!==projectId); el.classList.remove('granted'); el.textContent=el.textContent.replace('✓ ','').trim(); toast('Access removed.','warning'); }
+    else { toast('Error: '+error.message,'error'); }
+  }
+  el.style.opacity='1'; el.style.pointerEvents='';
 }
 
-// ═══════════════════════════════════════════════════
-//  ESC HTML
-// ═══════════════════════════════════════════════════
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── VIEW MODE ─────────────────────────────────────────────────────────────────
+function setViewMode(mode) {
+  clientView = (mode === 'client');
+  const bi = document.getElementById('btn-internal');
+  const bc = document.getElementById('btn-client');
+  if (bi && bc) {
+    bi.classList.toggle('active', mode === 'internal');
+    bi.classList.remove('client-active');
+    bc.classList.remove('active');
+    bc.classList.toggle('client-active', mode === 'client');
+  }
+  const banner = document.getElementById('client-mode-banner');
+  if (banner) banner.style.display = clientView ? 'flex' : 'none';
+  // If switching to client view while on log page, go back to dashboard
+  if (clientView && view === 'log') navigate('dashboard');
+  render();
 }
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function updateSidebar() {
+  const allD=visibleProjects.flatMap(p=>p.deliverables||[]);
+  document.getElementById('sb-week').textContent    = allD.filter(d=>{if(d.completed)return false;const s=calcStatus(d.dueDate);return s.days!==null&&s.days>=0&&s.days<=7;}).length;
+  document.getElementById('sb-overdue').textContent = allD.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='overdue').length;
+  document.getElementById('nav-log').style.display  = clientView ? 'none' : 'flex';
+  document.getElementById('sidebar-projects').innerHTML=visibleProjects.filter(p=>p.status==='active').map(p=>`<div class="nav-item ${view==='project'&&pid===p.id?'active':''}" onclick="navigate('project','${p.id}')"><div style="width:7px;height:7px;border-radius:50%;background:${projectDot(p)};flex-shrink:0;"></div><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.name)}</span></div>`).join('');
+}
+
+// ── EXCEL EXPORT ──────────────────────────────────────────────────────────────
+async function exportExcel() {
+  if(!window.XLSX) {
+    toast('Loading Excel library…','info');
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  const wb=XLSX.utils.book_new();
+  // Sheet 1: Summary
+  const sumRows=[['Project','Client','Type','Start Date','Final Delivery','Progress %','Pending','Overdue']];
+  visibleProjects.forEach(p=>{
+    const delivs=p.deliverables||[], prog=projectProgress(p);
+    const pending=delivs.filter(d=>!d.completed).length;
+    const overdue=delivs.filter(d=>!d.completed&&calcStatus(d.dueDate).status==='overdue').length;
+    sumRows.push([p.name,p.client||'',p.type||'',p.startDate||'',p.finalDeliveryDate||'',prog,pending,overdue]);
+  });
+  const ws1=XLSX.utils.aoa_to_sheet(sumRows);
+  ws1['!cols']=[40,20,22,14,14,12,10,10].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws1,'Projects Summary');
+  // Sheet 2: Deliverables
+  const delRows=[['Project','Client','Deliverable','Due Date','Status','Days Left','Source File','Notes','Completed?']];
+  visibleProjects.forEach(p=>{
+    (p.deliverables||[]).forEach(d=>{
+      const s=calcStatus(d.dueDate,d.completed);
+      delRows.push([p.name,p.client||'',d.name,d.dueDate||'',s.label,s.days!=null?s.days:'',d.sourceFile||'',d.notes||'',d.completed?'Yes':'No']);
+    });
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(delRows);
+  ws2['!cols']=[35,18,42,14,14,10,25,40,10].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws2,'All Deliverables');
+  XLSX.writeFile(wb,`Incisiv_Project_Deadlines_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('Excel downloaded!','success');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function esc(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fmtDate(s){if(!s)return'—';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function toast(msg,type='info'){const tc=document.getElementById('toast-container');const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=`<span>${{success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'}[type]||'ℹ️'}</span><span>${esc(msg)}</span>`;tc.appendChild(t);setTimeout(()=>t.remove(),3500);}
+
+// Auto-refresh every 5 minutes
+setInterval(async()=>{ if(!currentUser)return; await loadAppData(); render(); }, 5*60*1000);
 </script>
 </body>
 </html>
