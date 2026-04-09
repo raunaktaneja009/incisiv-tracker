@@ -535,7 +535,24 @@
       "files": [
         "incisiv_projects_data.json"
       ]
+    },
+    {
+      "timestamp": "2026-04-09T06:03:54.000Z",
+      "date": "2026-04-09",
+      "action": "nightly_scan",
+      "message": "Nightly scan complete. Checked 0 files. No new files detected since last scan (last scan: 2026-04-08T13:55:10.858Z). Projects scanned: Direct Spends-2026, CXO Study-2026.",
+      "type": "info",
+      "files": []
+    },
+    {
+      "timestamp": "2026-04-09T13:02:26.413150Z",
+      "action": "daily_scan",
+      "message": "Scan complete. 2 new/modified file(s): incisiv_projects_data.json, last_scan_report.txt",
+      "files": [
+        "incisiv_projects_data.json",
+        "last_scan_report.txt"
+      ]
     }
   ],
-  "lastUpdated": "2026-04-08T13:55:10.858Z"
+  "lastUpdated": "2026-04-09T13:02:26.413150Z"
 }
