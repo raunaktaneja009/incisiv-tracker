@@ -558,7 +558,24 @@
       "action": "daily_scan",
       "message": "Scan complete. No new/modified file(s) since last scan.",
       "files": []
+    },
+    {
+      "timestamp": "2026-04-10T16:31:55.000Z",
+      "date": "2026-04-10",
+      "action": "nightly_scan",
+      "message": "Nightly scan complete. Checked 0 files. No new files detected since last scan (last scan: 2026-04-10T13:02:57.494083Z). Projects scanned: Direct Spends-2026 (fully scanned). Note: CXO Study-2026 folder not accessible in this session — only Direct Spends-2026 was mounted.",
+      "type": "info",
+      "files": []
+    },
+    {
+      "timestamp": "2026-04-12T07:25:53.385356Z",
+      "action": "daily_scan",
+      "message": "Scan complete. 2 new/modified file(s): incisiv_projects_data.json, last_scan_report.txt",
+      "files": [
+        "incisiv_projects_data.json",
+        "last_scan_report.txt"
+      ]
     }
   ],
-  "lastUpdated": "2026-04-10T13:02:57.494083Z"
+  "lastUpdated": "2026-04-12T07:25:53.385356Z"
 }
